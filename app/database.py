@@ -37,6 +37,8 @@ class Database:
         if not os.path.exists(self.db_path):
             print("База даних не знайдена. Ініціалізація...")
             try:
+                # Створення підключення для виконання SQL-скрипту
+                self.connection = sqlite3.connect(self.db_path)
                 with open(self.sql_file, 'r') as file:
                     sql_script = file.read()
 
@@ -48,6 +50,8 @@ class Database:
                 raise e
         else:
             print("База даних вже існує. Пропускаю ініціалізацію.")
+            # Підключення до існуючої бази
+            self.connect()
 
     def execute_query(self, query: str, parameters: tuple = ()):
         """
