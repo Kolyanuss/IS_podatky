@@ -1,0 +1,41 @@
+PRAGMA foreign_keys = ON;
+
+CREATE TABLE GeneralInfo (
+    MinSalary INTEGER NOT NULL,
+    TaxRate REAL NOT NULL,
+    NormativeMonetaryValue REAL NOT NULL
+);
+
+CREATE TABLE RealEstateType (
+    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+    Name TEXT NOT NULL
+);
+
+CREATE TABLE Users (
+    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+    Name TEXT NOT NULL,
+    LastName TEXT NOT NULL,
+    MiddleName TEXT NOT NULL,
+    RNOKPP INTEGER NOT NULL UNIQUE,
+    Address TEXT NOT NULL,
+    Email TEXT UNIQUE,
+    Phone TEXT CHECK (Phone GLOB '[0-9]*')
+);
+
+CREATE TABLE RealEstate (
+    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+    Name TEXT NOT NULL,
+    Address TEXT NOT NULL,
+    Area REAL NOT NULL,
+    AreaTaxable REAL NOT NULL,
+    Tax REAL NOT NULL,
+    Notes TEXT,
+    UserId INTEGER,
+    RealEstateTypeId INTEGER,
+    FOREIGN KEY (UserId) REFERENCES Users(Id)
+        ON DELETE RESTRICT
+        ON UPDATE CASCADE,
+    FOREIGN KEY (RealEstateTypeId) REFERENCES RealEstateType(Id)
+        ON DELETE RESTRICT
+        ON UPDATE CASCADE
+);
