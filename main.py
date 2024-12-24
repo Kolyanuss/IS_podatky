@@ -1,7 +1,7 @@
-from app.database import Database
-from ui.ui import MainWindow
 import sys
-from PyQt5.QtWidgets import QApplication
+from app.database import Database
+from ui.main_window_ui import MainWindow
+from PyQt6.QtWidgets import QApplication
 
 # Приклад використання
 if __name__ == "__main__":
@@ -17,4 +17,4 @@ if __name__ == "__main__":
     window = MainWindow(db)
     window.show()
 
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

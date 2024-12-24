@@ -1,18 +1,19 @@
-import sys
 from PyQt6.QtWidgets import (
-    QApplication, QMainWindow, QTableWidget, QTableWidgetItem, QPushButton,
+    QMainWindow, QTableWidget, QTableWidgetItem, QPushButton, QHeaderView,
     QVBoxLayout, QHBoxLayout, QWidget, QMenuBar, QMenu, QLineEdit, QComboBox,
     QCompleter
 )
 from PyQt6.QtGui import QAction
 from PyQt6.QtCore import Qt
+from ui.add_person_ui import AddPersonDialog
 
 class MainWindow(QMainWindow):
-    def __init__(self):
+    def __init__(self, db):
         super().__init__()
-
+        self.db = db
+        
         self.setWindowTitle("Main Window")
-        self.setGeometry(100, 100, 800, 600)
+        self.setGeometry(100, 100, 1100, 700)
 
         # Central widget
         central_widget = QWidget()
@@ -23,6 +24,7 @@ class MainWindow(QMainWindow):
         button_layout = QHBoxLayout()
         table_layout = QVBoxLayout()
         action_layout = QHBoxLayout()
+        action_button_layout = QHBoxLayout()
 
         # Menu Bar
         menu_bar = QMenuBar(self)
@@ -60,6 +62,7 @@ class MainWindow(QMainWindow):
 
         add_person_button = QPushButton("Add New Person")
         add_person_button.setStyleSheet("background-color: violet; font-size: 14px;")
+        add_person_button.clicked.connect(self.open_add_person_dialog)
 
         button_layout.addWidget(year_button)
         button_layout.addWidget(min_salary_button)
@@ -72,6 +75,7 @@ class MainWindow(QMainWindow):
         self.table.setHorizontalHeaderLabels(["Name", "Address", "Area", "Type", "Note"])
         self.table.setStyleSheet("font-size: 14px;")
         self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         table_layout.addWidget(self.table)
 
         # Bottom Controls
@@ -114,18 +118,23 @@ class MainWindow(QMainWindow):
         action_layout.addWidget(area_input)
         action_layout.addWidget(type_dropdown)
         action_layout.addWidget(note_input)
-        action_layout.addWidget(add_button)
-        action_layout.addWidget(update_button)
-        action_layout.addWidget(delete_button)
+        
+        action_button_layout.addWidget(add_button)
+        action_button_layout.addWidget(update_button)
+        action_button_layout.addWidget(delete_button)
 
         # Combine Layouts
         main_layout.addLayout(button_layout)
         main_layout.addLayout(table_layout)
         main_layout.addLayout(action_layout)
+        main_layout.addLayout(action_button_layout)
+        
         central_widget.setLayout(main_layout)
 
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    window = MainWindow()
-    window.show()
-    sys.exit(app.exec())
+    def open_add_person_dialog(self):
+        """Відкриття діалогу додавання користувача."""
+        dialog = AddPersonDialog(self.db)
+        dialog.exec()  # Відкриває діалогове вікно
+        # if dialog.exec():  # Якщо користувача успішно додано
+        #     self.load_users()
+
