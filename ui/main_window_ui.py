@@ -15,6 +15,8 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Main Window")
         self.setGeometry(100, 100, 1100, 700)
 
+        self.apply_global_styles()
+
         # Central widget
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
@@ -47,7 +49,7 @@ class MainWindow(QMainWindow):
         about_menu = QMenu("About", self)
         menu_bar.addMenu(about_menu)
 
-        # Buttons (Top Row)
+        # Buttons Top Row
         year_button = QPushButton("YEAR\n2024")
         year_button.setStyleSheet("background-color: pink; font-size: 14px;")
 
@@ -62,6 +64,7 @@ class MainWindow(QMainWindow):
 
         add_person_button = QPushButton("Add New Person")
         add_person_button.setStyleSheet("background-color: violet; font-size: 14px;")
+        
         add_person_button.clicked.connect(self.open_add_person_dialog)
 
         button_layout.addWidget(year_button)
@@ -73,7 +76,6 @@ class MainWindow(QMainWindow):
         # Table
         self.table = QTableWidget(5, 5)
         self.table.setHorizontalHeaderLabels(["Name", "Address", "Area", "Type", "Note"])
-        self.table.setStyleSheet("font-size: 14px;")
         self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         table_layout.addWidget(self.table)
@@ -131,10 +133,64 @@ class MainWindow(QMainWindow):
         
         central_widget.setLayout(main_layout)
 
+    def apply_global_styles(self):
+        """Apply global styles."""
+        self.setStyleSheet("""
+            QWidget {
+                background-color: #f5f6fa;
+                font-family: 'Segoe UI', sans-serif;
+            }
+            QTableWidget {
+                background-color: white;
+                border: 1px solid #dcdde1;
+                border-radius: 5px;
+                gridline-color: #636e72;
+            }
+            QTableWidget::item {
+                padding: 5px;
+                border-bottom: 1px solid #dcdde1;
+                border-right: 1px solid #dcdde1;
+            }
+            QHeaderView::section {
+                background-color: #f5f6fa;
+                padding: 5px;
+                border: none;
+                font-weight: bold;
+                border-bottom: 2px solid #2d3436;
+                border-right: 1px solid #dcdde1;
+            }
+            QHeaderView::section:last {
+                border-right: none;
+            }
+            QLineEdit {
+                padding: 8px;
+                border: 2px solid #dcdde1;
+                border-radius: 5px;
+                background-color: white;
+            }
+            QLineEdit:focus {
+                border: 2px solid #3498db;
+            }
+            QPushButton {
+                padding: 5px 10px;
+                border-radius: 5px;
+                border: none;
+                color: white;
+                font-weight: bold;
+                font-size: 14px;
+                margin: 1px;
+            }
+            QPushButton:hover {
+                opacity: 0.8;
+                margin: 0px;
+                border: 1px solid #636e72;
+            }
+            QPushButton:pressed {
+                margin: 2px 0px 0px 2px;
+            }
+        """)
+
     def open_add_person_dialog(self):
         """Відкриття діалогу додавання користувача."""
         dialog = AddPersonDialog(self.db)
         dialog.exec()  # Відкриває діалогове вікно
-        # if dialog.exec():  # Якщо користувача успішно додано
-        #     self.load_users()
-
