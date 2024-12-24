@@ -83,3 +83,54 @@ class Database:
         except sqlite3.Error as e:
             print(f"Помилка виконання запиту: {e}")
             raise e
+
+    def add_user(self, name, last_name, middle_name, rnokpp, address, email, phone):
+        """Додавання нового користувача."""
+        query = """
+        INSERT INTO users (name, last_name, middle_name, rnokpp, address, email, phone)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+        """
+        try:
+            with self.connection:
+                self.connection.execute(query, (name, last_name, middle_name, rnokpp, address, email, phone))
+                print("Користувача успішно додано.")
+        except sqlite3.Error as e:
+            print(f"Помилка додавання користувача: {e}")
+            raise e
+
+    def update_user(self, record_id, name, last_name, middle_name, rnokpp, address, email, phone):
+        """Оновлює інформацію про користувача в базі даних."""
+        query = """
+        UPDATE users
+        SET name = ?, last_name = ?, middle_name = ?, rnokpp = ?, address = ?, email = ?, phone = ?
+        WHERE id = ?
+        """
+        try:
+            with self.connection:
+                self.connection.execute(query, (name, last_name, middle_name, rnokpp, address, email, phone, record_id))
+                print("Дані користувача оновлено.")
+        except sqlite3.Error as e:
+            print(f"Помилка оновлення користувача: {e}")
+            raise e
+
+    def delete_user(self, record_id):
+        """Видаляє запис користувача з бази даних."""
+        query = "DELETE FROM users WHERE id = ?"
+        try:
+            with self.connection:
+                self.connection.execute(query, (record_id,))
+                print("Користувача видалено.")
+        except sqlite3.Error as e:
+            print(f"Помилка видалення користувача: {e}")
+            raise e
+
+    def get_users(self):
+        """Отримання списку користувачів."""
+        query = "SELECT * FROM users"
+        try:
+            with self.connection:
+                cursor = self.connection.execute(query)
+                return cursor.fetchall()
+        except sqlite3.Error as e:
+            print(f"Помилка отримання користувачів: {e}")
+            raise e
