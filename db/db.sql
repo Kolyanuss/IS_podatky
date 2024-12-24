@@ -46,8 +46,8 @@ CREATE TABLE users (
     middle_name TEXT NOT NULL,
     rnokpp INTEGER NOT NULL UNIQUE,
     address TEXT NOT NULL,
-    email TEXT UNIQUE,
-    phone TEXT CHECK (phone GLOB '[0-9]*')
+    email TEXT,
+    phone TEXT CHECK (phone = '' OR phone GLOB '[0-9]*')
 );
 
 CREATE TABLE real_estate (
