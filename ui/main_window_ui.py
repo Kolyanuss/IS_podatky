@@ -6,6 +6,7 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtGui import QAction
 from PyQt6.QtCore import Qt
 from ui.add_person_ui import AddPersonDialog
+from ui.styles import apply_style, apply_styles
 
 class MainWindow(QMainWindow):
     def __init__(self, db):
@@ -15,7 +16,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Main Window")
         self.setGeometry(100, 100, 1100, 700)
 
-        self.apply_global_styles()
+        apply_style(self, "base")
 
         # Central widget
         central_widget = QWidget()
@@ -78,6 +79,9 @@ class MainWindow(QMainWindow):
         self.table.setHorizontalHeaderLabels(["Name", "Address", "Area", "Type", "Note"])
         self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self.table.setAlternatingRowColors(True)
+        self.table.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         table_layout.addWidget(self.table)
 
         # Bottom Controls
@@ -132,63 +136,6 @@ class MainWindow(QMainWindow):
         main_layout.addLayout(action_button_layout)
         
         central_widget.setLayout(main_layout)
-
-    def apply_global_styles(self):
-        """Apply global styles."""
-        self.setStyleSheet("""
-            QWidget {
-                background-color: #f5f6fa;
-                font-family: 'Segoe UI', sans-serif;
-            }
-            QTableWidget {
-                background-color: white;
-                border: 1px solid #dcdde1;
-                border-radius: 5px;
-                gridline-color: #636e72;
-            }
-            QTableWidget::item {
-                padding: 5px;
-                border-bottom: 1px solid #dcdde1;
-                border-right: 1px solid #dcdde1;
-            }
-            QHeaderView::section {
-                background-color: #f5f6fa;
-                padding: 5px;
-                border: none;
-                font-weight: bold;
-                border-bottom: 2px solid #2d3436;
-                border-right: 1px solid #dcdde1;
-            }
-            QHeaderView::section:last {
-                border-right: none;
-            }
-            QLineEdit {
-                padding: 8px;
-                border: 2px solid #dcdde1;
-                border-radius: 5px;
-                background-color: white;
-            }
-            QLineEdit:focus {
-                border: 2px solid #3498db;
-            }
-            QPushButton {
-                padding: 5px 10px;
-                border-radius: 5px;
-                border: none;
-                color: white;
-                font-weight: bold;
-                font-size: 14px;
-                margin: 1px;
-            }
-            QPushButton:hover {
-                opacity: 0.8;
-                margin: 0px;
-                border: 1px solid #636e72;
-            }
-            QPushButton:pressed {
-                margin: 2px 0px 0px 2px;
-            }
-        """)
 
     def open_add_person_dialog(self):
         """Відкриття діалогу додавання користувача."""

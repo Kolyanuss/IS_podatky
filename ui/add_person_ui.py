@@ -2,6 +2,8 @@ from PyQt6.QtWidgets import (
     QDialog, QVBoxLayout, QLineEdit, QPushButton, QMessageBox, QFrame, 
     QTableWidget, QTableWidgetItem, QHBoxLayout, QLabel, QHeaderView
 )
+from PyQt6.QtCore import Qt
+from ui.styles import apply_style, apply_styles, get_button_style
 
 class AddPersonDialog(QDialog):
     def __init__(self, db):
@@ -25,7 +27,8 @@ class AddPersonDialog(QDialog):
         """Ініціалізація основного інтерфейсу"""
         self.setWindowTitle("Керування користувачами")
         self.resize(1200, 700)
-        # self.apply_global_styles()
+        
+        apply_styles(self, ["base", "input_field"])
         
         # Створення основних компонентів
         self.create_table()
@@ -42,58 +45,6 @@ class AddPersonDialog(QDialog):
         
         self.setLayout(main_layout)
 
-    def apply_global_styles(self):
-        """Застосування глобальних стилів"""
-        self.setStyleSheet("""
-            QWidget {
-                background-color: #f5f6fa;
-                font-family: 'Segoe UI', sans-serif;
-            }
-            QTableWidget {
-                background-color: white;
-                border: 1px solid #dcdde1;
-                border-radius: 5px;
-                gridline-color: #636e72;
-            }
-            QTableWidget::item {
-                padding: 5px;
-                border-bottom: 1px solid #dcdde1;
-                border-right: 1px solid #dcdde1;
-            }
-            QHeaderView::section {
-                background-color: #f5f6fa;
-                padding: 5px;
-                border: none;
-                font-weight: bold;
-                border-bottom: 2px solid #2d3436;
-                border-right: 1px solid #dcdde1;
-            }
-            QHeaderView::section:last {
-                border-right: none;
-            }
-            QLineEdit {
-                padding: 8px;
-                border: 2px solid #dcdde1;
-                border-radius: 5px;
-                background-color: white;
-            }
-            QLineEdit:focus {
-                border: 2px solid #3498db;
-            }
-            QPushButton:hover {
-                opacity: 0.8;
-                margin: 0px;
-                border: 1px solid #636e72;
-            }
-            QPushButton:pressed {
-                margin: 2px 0px 0px 2px;
-            }
-            QLabel {
-                color: #2f3640;
-                font-weight: bold;
-            }
-        """)
-
     def create_table(self):
         """Створення та налаштування таблиці"""
         self.table = QTableWidget()
@@ -107,20 +58,9 @@ class AddPersonDialog(QDialog):
         self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.table.setAlternatingRowColors(True)
         self.table.cellClicked.connect(self.on_cell_click)
-        self.table.setStyleSheet("""
-            QTableWidget {
-                gridline-color: #dcdde1;
-                background-color: white;
-                border: 1px solid #dcdde1;
-            }
-            QTableWidget::item:selected {
-                background-color: #74b9ff;
-                color: black;
-            }
-            QTableWidget::item:alternate {
-                background-color: #f5f6fa;
-            }
-        """)
+        self.table.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
+        
 
     def create_input_field(self, label_text, placeholder):
         """Створення окремого поля вводу з міткою"""
@@ -139,10 +79,11 @@ class AddPersonDialog(QDialog):
     def create_input_container(self):
         """Створення контейнера з полями вводу"""
         input_container = QFrame()
+        input_container.setObjectName("inputContainer")
         input_container.setStyleSheet("""
-            QFrame {
+            #inputContainer {
                 background-color: white;
-                border-radius: 10px;
+                border-radius: 5px;
                 padding: 5px;
                 border: 1px solid #dcdde1;
             }
@@ -159,30 +100,10 @@ class AddPersonDialog(QDialog):
 
         return input_container
 
-    def create_button(self, text, color, hover_color, callback):
+    def create_button(self, text, button_type, callback):
         """Створення кнопки з заданими параметрами"""
         button = QPushButton(text)
-        button.setStyleSheet(f"""
-            QPushButton {{
-                background-color: {color};
-                padding: 5px 10px;
-                border-radius: 5px;
-                border: none;
-                color: white;
-                font-weight: bold;
-                font-size: 20px;
-                margin: 1px;
-            }}
-            QPushButton:hover {{
-                background-color: {hover_color};
-                margin: 0px;
-                border: 1px solid #636e72;
-            }}
-            QPushButton:pressed {{
-                margin: 2px 0px 0px 2px;
-                background-color: {color};
-            }}
-            """)
+        button.setStyleSheet(get_button_style(button_type))
         button.clicked.connect(callback)
         return button
 
@@ -190,9 +111,9 @@ class AddPersonDialog(QDialog):
         """Створення панелі з кнопками"""
         button_layout = QHBoxLayout()
         
-        self.add_button = self.create_button("Додати", "#2ecc71", "#27ae60", self.add_person)
-        self.update_button = self.create_button("Оновити", "#3498db", "#2980b9", self.update_person)
-        self.delete_button = self.create_button("Видалити", "#e74c3c", "#c0392b", self.delete_record)
+        self.add_button = self.create_button("Додати", "success", self.add_person)
+        self.update_button = self.create_button("Оновити", "primary", self.update_person)
+        self.delete_button = self.create_button("Видалити", "danger", self.delete_record)
         
         button_layout.addWidget(self.add_button)
         button_layout.addWidget(self.update_button)
