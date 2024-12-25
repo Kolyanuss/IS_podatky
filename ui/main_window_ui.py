@@ -1,12 +1,13 @@
 from PyQt6.QtWidgets import (
     QMainWindow, QTableWidget, QTableWidgetItem, QPushButton, QHeaderView,
     QVBoxLayout, QHBoxLayout, QWidget, QMenuBar, QMenu, QLineEdit, QComboBox,
-    QCompleter
+    QCompleter, QFrame, QLabel
 )
 from PyQt6.QtGui import QAction
 from PyQt6.QtCore import Qt
 from ui.add_person_ui import AddPersonDialog
-from ui.styles import apply_style, apply_styles
+from ui.styles import apply_styles
+from ui.elements import create_button
 
 class MainWindow(QMainWindow):
     def __init__(self, db):
@@ -16,7 +17,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Main Window")
         self.setGeometry(100, 100, 1100, 700)
 
-        apply_style(self, "base")
+        apply_styles(self, ["base", "input_field"])
 
         # Central widget
         central_widget = QWidget()
@@ -24,12 +25,24 @@ class MainWindow(QMainWindow):
 
         # Layouts
         main_layout = QVBoxLayout()
-        button_layout = QHBoxLayout()
-        table_layout = QVBoxLayout()
-        action_layout = QHBoxLayout()
-        action_button_layout = QHBoxLayout()
+        top_button_layout = self.create_top_button_layout()
+        table_layout = self.create_table_layout()
+        action_layout = self.create_action_layouts()
+        action_button_layout = self.create_buttons()
 
         # Menu Bar
+        self.create_menu_bar()
+
+        # Combine Layouts
+        main_layout.addLayout(top_button_layout)
+        main_layout.addLayout(table_layout)
+        main_layout.addWidget(action_layout)
+        main_layout.addLayout(action_button_layout)
+        
+        central_widget.setLayout(main_layout)
+
+    def create_menu_bar(self):
+        """Створення меню бару"""
         menu_bar = QMenuBar(self)
         self.setMenuBar(menu_bar)
 
@@ -50,7 +63,10 @@ class MainWindow(QMainWindow):
         about_menu = QMenu("About", self)
         menu_bar.addMenu(about_menu)
 
-        # Buttons Top Row
+    def create_top_button_layout(self):
+        """Створення лейауту з кнопками"""
+        button_layout = QHBoxLayout()
+
         year_button = QPushButton("YEAR\n2024")
         year_button.setStyleSheet("background-color: pink; font-size: 14px;")
 
@@ -65,7 +81,6 @@ class MainWindow(QMainWindow):
 
         add_person_button = QPushButton("Add New Person")
         add_person_button.setStyleSheet("background-color: violet; font-size: 14px;")
-        
         add_person_button.clicked.connect(self.open_add_person_dialog)
 
         button_layout.addWidget(year_button)
@@ -74,7 +89,11 @@ class MainWindow(QMainWindow):
         button_layout.addWidget(change_type_button)
         button_layout.addWidget(add_person_button)
 
-        # Table
+        return button_layout
+
+    def create_table_layout(self):
+        """Створення лейауту з таблицею"""
+        table_layout = QVBoxLayout()
         self.table = QTableWidget(5, 5)
         self.table.setHorizontalHeaderLabels(["Name", "Address", "Area", "Type", "Note"])
         self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
@@ -83,8 +102,19 @@ class MainWindow(QMainWindow):
         self.table.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         table_layout.addWidget(self.table)
+        return table_layout
 
-        # Bottom Controls
+    def create_input_field(self, label_text, input_field):
+        """Створення вертикального блоку з міткою та полем вводу"""
+        field_layout = QVBoxLayout()
+        label = QLabel(label_text)
+        
+        field_layout.addWidget(label)
+        field_layout.addWidget(input_field)
+        
+        return field_layout
+
+    def create_person_dropdown(self):
         person_dropdown = QComboBox()
         person_dropdown.setEditable(True)
         person_dropdown.setPlaceholderText("Select Person")
@@ -98,46 +128,76 @@ class MainWindow(QMainWindow):
         completer.setFilterMode(Qt.MatchFlag.MatchContains)
         completer.setCompletionMode(QCompleter.CompletionMode.PopupCompletion)
         person_dropdown.setCompleter(completer)
+        
+        return person_dropdown
 
-        name_input = QLineEdit()
-        name_input.setPlaceholderText("Name")
+    def create_action_layouts(self):
+        """Створення полів для вводу"""
+        input_container = QFrame()
+        input_container.setObjectName("inputContainer")
+        input_container.setStyleSheet("""
+            #inputContainer {
+                background-color: white;
+                border-radius: 5px;
+                padding: 5px;
+                border: 1px solid #dcdde1;
+            }
+        """)
+        
+        action_layout = QHBoxLayout(input_container)
+        
+        person_dropdown = self.create_input_field("Власник нерухомості:", self.create_person_dropdown())
+        
+        name_input = self.create_input_field("Назва нерухомості:", QLineEdit())
 
-        address_input = QLineEdit()
-        address_input.setPlaceholderText("Address")
+        address_input = self.create_input_field("Адреса нерухомості (м^2):", QLineEdit())
 
-        area_input = QLineEdit()
-        area_input.setPlaceholderText("Area")
+        area_input = self.create_input_field("Площа нерухомості:", QLineEdit())
 
         type_dropdown = QComboBox()
         type_dropdown.addItems(["Type 1", "Type 2", "Type 3"])
+        type_dropdown = self.create_input_field("Тип нерухомості:", type_dropdown)
 
-        note_input = QLineEdit()
-        note_input.setPlaceholderText("Note")
+        note_input = self.create_input_field("Нотатки:", QLineEdit())
 
-        add_button = QPushButton("Add")
-        update_button = QPushButton("Update")
-        delete_button = QPushButton("Delete")
+        action_layout.addLayout(person_dropdown)
+        action_layout.addLayout(name_input)
+        action_layout.addLayout(address_input)
+        action_layout.addLayout(area_input)
+        action_layout.addLayout(type_dropdown)
+        action_layout.addLayout(note_input)
 
-        action_layout.addWidget(person_dropdown)
-        action_layout.addWidget(name_input)
-        action_layout.addWidget(address_input)
-        action_layout.addWidget(area_input)
-        action_layout.addWidget(type_dropdown)
-        action_layout.addWidget(note_input)
+        return input_container
+    
+    
+    def create_buttons(self):
+        button_layout = QHBoxLayout()
         
-        action_button_layout.addWidget(add_button)
-        action_button_layout.addWidget(update_button)
-        action_button_layout.addWidget(delete_button)
-
-        # Combine Layouts
-        main_layout.addLayout(button_layout)
-        main_layout.addLayout(table_layout)
-        main_layout.addLayout(action_layout)
-        main_layout.addLayout(action_button_layout)
+        add_button = create_button("Додати", "success", self.add_record)
+        update_button = create_button("Оновити", "primary", self.update_record)
+        delete_button = create_button("Видалити", "danger", self.delete_record)
         
-        central_widget.setLayout(main_layout)
-
+        button_layout.addWidget(add_button)
+        button_layout.addWidget(update_button)
+        button_layout.addWidget(delete_button)
+        button_layout.setSpacing(15)
+        
+        return button_layout
+        
     def open_add_person_dialog(self):
         """Відкриття діалогу додавання користувача."""
         dialog = AddPersonDialog(self.db)
         dialog.exec()  # Відкриває діалогове вікно
+        
+    
+    def add_record(self):
+        """Додавання запису"""
+        pass        
+
+    def update_record(self):
+        """Оновлення запису"""
+        pass
+
+    def delete_record(self):
+        """Видалення запису"""
+        pass       

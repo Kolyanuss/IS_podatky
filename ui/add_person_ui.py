@@ -3,7 +3,8 @@ from PyQt6.QtWidgets import (
     QTableWidget, QTableWidgetItem, QHBoxLayout, QLabel, QHeaderView
 )
 from PyQt6.QtCore import Qt
-from ui.styles import apply_style, apply_styles, get_button_style
+from ui.styles import apply_style, apply_styles
+from ui.elements import create_button
 
 class AddPersonDialog(QDialog):
     def __init__(self, db):
@@ -40,8 +41,8 @@ class AddPersonDialog(QDialog):
         main_layout.addWidget(self.table)
         main_layout.addWidget(input_container)
         main_layout.addLayout(button_layout)
-        main_layout.setSpacing(10)
-        main_layout.setContentsMargins(10, 10, 10, 10)
+        # main_layout.setSpacing(10)
+        # main_layout.setContentsMargins(10, 10, 10, 10)
         
         self.setLayout(main_layout)
 
@@ -100,20 +101,13 @@ class AddPersonDialog(QDialog):
 
         return input_container
 
-    def create_button(self, text, button_type, callback):
-        """Створення кнопки з заданими параметрами"""
-        button = QPushButton(text)
-        button.setStyleSheet(get_button_style(button_type))
-        button.clicked.connect(callback)
-        return button
-
     def create_buttons(self):
         """Створення панелі з кнопками"""
         button_layout = QHBoxLayout()
         
-        self.add_button = self.create_button("Додати", "success", self.add_person)
-        self.update_button = self.create_button("Оновити", "primary", self.update_person)
-        self.delete_button = self.create_button("Видалити", "danger", self.delete_record)
+        self.add_button = create_button("Додати", "success", self.add_person)
+        self.update_button = create_button("Оновити", "primary", self.update_person)
+        self.delete_button = create_button("Видалити", "danger", self.delete_record)
         
         button_layout.addWidget(self.add_button)
         button_layout.addWidget(self.update_button)

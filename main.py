@@ -13,7 +13,6 @@ if __name__ == "__main__":
     db = Database(db_path, sql_file)
     db.initialize_database()
 
-
     window = MainWindow(db)
     window.show()
 

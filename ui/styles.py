@@ -45,7 +45,13 @@ def get_global_styles():
             }
             QLabel {
                 font-weight: bold;
-                padding-left: 10px;
+                padding: 0px 5px 0px 5px;
+            }
+            QComboBox {
+                padding: 5px;
+                border: 2px solid #dcdde1;
+                border-radius: 5px;
+                background-color: white;
             }
         """,
         
@@ -57,13 +63,6 @@ def get_global_styles():
                 border: 1px solid #dcdde1;
             }
         """,
-        
-        "label": """
-            QLabel {
-                color: #2f3640;
-                font-weight: bold;
-            }
-        """
     }
 
 def apply_style(widget, style_name):
