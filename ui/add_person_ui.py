@@ -5,9 +5,10 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt
 from ui.styles import apply_style, apply_styles
 from ui.elements import create_button
+from app.database import Database
 
 class AddPersonDialog(QDialog):
-    def __init__(self, db):
+    def __init__(self, db: Database):
         super().__init__()
         self.db = db
         self.input_fields = {}
@@ -130,7 +131,7 @@ class AddPersonDialog(QDialog):
 
         if all(data[:-2]):
             try:
-                self.db.add_user(*data)
+                self.db.add_user(data)
                 QMessageBox.information(self, "Успіх", "Користувача успішно додано!")
                 self.clear_inputs()
                 self.load_users()
@@ -148,7 +149,7 @@ class AddPersonDialog(QDialog):
 
             if all(data[:-2]):
                 try:
-                    self.db.update_user(record_id, *data)
+                    self.db.update_user(record_id, data)
                     QMessageBox.information(self, "Успіх", "Дані користувача оновлено!")
                     self.clear_inputs()
                     self.load_users()
