@@ -8,6 +8,7 @@ from PyQt6.QtCore import Qt
 from ui.add_person_ui import AddPersonDialog
 from ui.styles import apply_styles
 from ui.utils import create_button
+from ui.year_box import YearComboBox
 
 class MainWindow(QMainWindow):
     def __init__(self, db):
@@ -67,8 +68,11 @@ class MainWindow(QMainWindow):
         """Створення лейауту з кнопками"""
         button_layout = QHBoxLayout()
 
-        year_button = QPushButton("YEAR\n2024")
-        year_button.setStyleSheet("background-color: pink; font-size: 14px;")
+        first_Vbox = QVBoxLayout()
+        lable =  QLabel("Поточний рік:")
+        lable.setStyleSheet("font-size: 18px;")
+        first_Vbox.addWidget(lable)
+        first_Vbox.addWidget(YearComboBox())
 
         min_salary_button = QPushButton("Min salary")
         min_salary_button.setStyleSheet("background-color: lightgreen; font-size: 14px;")
@@ -83,7 +87,7 @@ class MainWindow(QMainWindow):
         add_person_button.setStyleSheet("background-color: violet; font-size: 14px;")
         add_person_button.clicked.connect(self.open_add_person_dialog)
 
-        button_layout.addWidget(year_button)
+        button_layout.addLayout(first_Vbox)
         button_layout.addWidget(min_salary_button)
         button_layout.addWidget(switch_table_button)
         button_layout.addWidget(change_type_button)
@@ -150,9 +154,9 @@ class MainWindow(QMainWindow):
         
         name_input = self.create_input_field("Назва нерухомості:", QLineEdit())
 
-        address_input = self.create_input_field("Адреса нерухомості (м^2):", QLineEdit())
+        address_input = self.create_input_field("Адреса нерухомості:", QLineEdit())
 
-        area_input = self.create_input_field("Площа нерухомості:", QLineEdit())
+        area_input = self.create_input_field("Площа(м^2):", QLineEdit())
 
         type_dropdown = QComboBox()
         type_dropdown.addItems(["Type 1", "Type 2", "Type 3"])
