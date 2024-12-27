@@ -53,72 +53,19 @@ class Database:
             # Підключення до існуючої бази
             self.connect()
 
-    def get_table_columns(self, table_name):
-        """Отримання списку стовпців таблиці table_name."""
-        cursor = self.connection.execute(f'SELECT * FROM {table_name} WHERE 1=0')
-        columns = [description[0] for description in cursor.description]
-        return columns
-
-    def add_record(self, table_name:str, columns, values):
-        """Додавання нового запису в таблицю table_name."""
-        query = f"""
-        INSERT INTO {table_name} ({', '.join(columns)})
-        VALUES ({', '.join(['?' for _ in values])})
-        """
+    def execute_query(self, query: str, params: tuple = None):
         try:
             with self.connection:
-                self.connection.execute(query, values)
-                # print(f"Новий запис для таблиці {table_name} успішно додано.")
-        except sqlite3.Error as e:
-            print(f"Помилка додавання запису: {e}")
-            raise e
-
-    def update_record(self, table_name:str, columns, values):
-        """Оновлення існуючого запису в таблиці table_name."""
-        query = f"""
-        UPDATE {table_name} 
-        SET {', '.join([f"{column} = ?" for column in columns])}
-        WHERE id = ?
-        """
-        try:
-            with self.connection:
-                self.connection.execute(query, values)
-                # print(f"Запис в таблиці {table_name} успішно оновлено.")
-        except sqlite3.Error as e:
-            print(f"Помилка оновлення запису: {e}")
-            raise e
-
-    def delete_record(self, table_name, record_id):
-        """Видаляє запис з бази даних."""
-        query = f"DELETE FROM {table_name} WHERE id = ?"
-        try:
-            with self.connection:
-                self.connection.execute(query, (record_id,))
-                # print("Запис видалено.")
-        except sqlite3.Error as e:
-            print(f"Помилка видалення: {e}")
-            raise e
-    
-    def get_all_record(self, table_name):
-        """Отримання списку всіх еементів з таблиці table_name."""
-        query = f"SELECT * FROM {table_name}"
-        try:
-            with self.connection:
-                cursor = self.connection.execute(query)
+                cursor = self.connection.execute(query, params or ())
                 return cursor.fetchall()
         except sqlite3.Error as e:
+            print(f"Помилка запиту отримання даних: {e}")
             raise e
-
-    def add_user(self, values):
-        column_name = self.get_table_columns("users")[1:]
-        self.add_record("users", column_name, values)
-
-    def update_user(self, record_id, values):
-        column_name = self.get_table_columns("users")[1:]
-        self.update_record("users", column_name, values + [record_id])
-
-    def delete_user(self, record_id):
-        self.delete_record("users", record_id)
-
-    def get_users(self):
-        return self.get_all_record("users")
+    
+    def execute_non_query(self, query: str, params: tuple = None):
+        try:
+            with self.connection:
+                self.connection.execute(query, params or ())
+        except sqlite3.Error as e:
+            print(f"Помилка запиту зміни даних: {e}")
+            raise e

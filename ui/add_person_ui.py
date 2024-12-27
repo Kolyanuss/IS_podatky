@@ -6,11 +6,12 @@ from PyQt6.QtCore import Qt
 from ui.styles import apply_style, apply_styles
 from ui.utils import create_button, confirm_delete
 from app.database import Database
+from app.user_repository import UserRepository
 
 class AddPersonDialog(QDialog):
     def __init__(self, db: Database):
         super().__init__()
-        self.db = db
+        self.user_repository = UserRepository(db)
         self.input_fields = {}
         self.fields_config = [
             ("name", "Ім'я*", "Введіть ім'я"),
@@ -119,7 +120,7 @@ class AddPersonDialog(QDialog):
 
     def load_users(self):
         """Завантаження користувачів у таблицю."""
-        users = self.db.get_users()
+        users = self.user_repository.get_all_record()
         self.table.setRowCount(len(users))
         for row_idx, user in enumerate(users):
             for col_idx, data in enumerate(user):
@@ -131,7 +132,7 @@ class AddPersonDialog(QDialog):
 
         if all(data[:-2]):
             try:
-                self.db.add_user(data)
+                self.user_repository.add_record(data)
                 QMessageBox.information(self, "Успіх", "Користувача успішно додано!")
                 self.clear_inputs()
                 self.load_users()
@@ -149,7 +150,7 @@ class AddPersonDialog(QDialog):
 
             if all(data[:-2]):
                 try:
-                    self.db.update_user(record_id, data)
+                    self.user_repository.update_record(record_id, data)
                     QMessageBox.information(self, "Успіх", "Дані користувача оновлено!")
                     self.clear_inputs()
                     self.load_users()
@@ -171,7 +172,7 @@ class AddPersonDialog(QDialog):
         
         if confirm_delete() == QMessageBox.StandardButton.Yes:
             try:
-                self.db.delete_user(record_id)
+                self.user_repository.delete_record(record_id)
                 QMessageBox.information(self, "Успіх", "Користувача видалено!")
                 self.load_users()
             except Exception as e:
