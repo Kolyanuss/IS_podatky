@@ -145,21 +145,23 @@ class AddPersonDialog(QDialog):
         """Оновлення вибраного користувача."""
         selected_row = self.table.currentRow()
         if selected_row != -1:
-            record_id = self.table.item(selected_row, 0).text()
-            data = [field.text() for field in self.input_fields.values()]
-
-            if all(data[:-2]):
-                try:
-                    self.user_repository.update_record(record_id, data)
-                    QMessageBox.information(self, "Успіх", "Дані користувача оновлено!")
-                    self.clear_inputs()
-                    self.load_users()
-                except Exception as e:
-                    QMessageBox.critical(self, "Помилка", f"Не вдалося оновити користувача: {e}")
-            else:
-                QMessageBox.warning(self, "Помилка", "Заповніть усі поля!")
-        else:
             QMessageBox.warning(self, "Помилка", "Виберіть запис для оновлення!")
+            return
+        
+        record_id = self.table.item(selected_row, 0).text()
+        data = [field.text() for field in self.input_fields.values()]
+
+        if all(data[:-2]):
+            try:
+                self.user_repository.update_record(record_id, data)
+                QMessageBox.information(self, "Успіх", "Дані користувача оновлено!")
+                self.clear_inputs()
+                self.load_users()
+            except Exception as e:
+                QMessageBox.critical(self, "Помилка", f"Не вдалося оновити користувача: {e}")
+        else:
+            QMessageBox.warning(self, "Помилка", "Заповніть усі поля!")
+
 
     def delete_record(self):
         """Видалення вибраного запису."""
