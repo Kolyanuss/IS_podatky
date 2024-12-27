@@ -7,7 +7,7 @@ from PyQt6.QtGui import QAction
 from PyQt6.QtCore import Qt
 from ui.add_person_ui import AddPersonDialog
 from ui.styles import apply_styles
-from ui.elements import create_button
+from ui.utils import create_button
 
 class MainWindow(QMainWindow):
     def __init__(self, db):

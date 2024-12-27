@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt
 from ui.styles import apply_style, apply_styles
-from ui.elements import create_button
+from ui.utils import create_button, confirm_delete
 from app.database import Database
 
 class AddPersonDialog(QDialog):
@@ -163,16 +163,20 @@ class AddPersonDialog(QDialog):
     def delete_record(self):
         """Видалення вибраного запису."""
         selected_row = self.table.currentRow()
-        if selected_row != -1:
-            record_id = self.table.item(selected_row, 0).text()
+        if selected_row == -1:
+            QMessageBox.warning(self, "Помилка", "Виберіть запис для видалення!")
+            return
+            
+        record_id = self.table.item(selected_row, 0).text()
+        
+        if confirm_delete() == QMessageBox.StandardButton.Yes:
             try:
                 self.db.delete_user(record_id)
                 QMessageBox.information(self, "Успіх", "Користувача видалено!")
                 self.load_users()
             except Exception as e:
                 QMessageBox.critical(self, "Помилка", f"Не вдалося видалити користувача: {e}")
-        else:
-            QMessageBox.warning(self, "Помилка", "Виберіть запис для видалення!")
+        
 
     def on_cell_click(self, row, column):
         """Заповнення полів введення даними вибраного рядка."""        
