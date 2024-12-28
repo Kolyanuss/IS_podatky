@@ -13,12 +13,14 @@ from ui.year_box import YearComboBox
 from ui.set_min_salary_window import MinSalaryWindow
 
 from app.salary_repository import SalaryRepository
+from app.real_estate_repository import RealEstateRepository
 
 class MainWindow(QMainWindow):
     def __init__(self, db):
         super().__init__()
         self.db = db
         self.salary_repo = SalaryRepository(db)
+        self.estate_repo = RealEstateRepository(db)
         self.setWindowTitle("Main Window")
         self.setGeometry(100, 100, 1100, 700)
 
@@ -114,13 +116,16 @@ class MainWindow(QMainWindow):
     def create_table_layout(self):
         """Створення лейауту з таблицею"""
         table_layout = QVBoxLayout()
-        self.table = QTableWidget(5, 5)
-        self.table.setHorizontalHeaderLabels(["Name", "Address", "Area", "Type", "Note"])
+        self.table = QTableWidget()
+        self.table.setColumnCount(len(self.estate_repo.columns))
+        self.table.setHorizontalHeaderLabels(self.estate_repo.columns)
+        self.table.setColumnHidden(0, True)
         self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.table.setAlternatingRowColors(True)
         self.table.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
+        # self.table.cellClicked.connect(self.on_cell_click)
         table_layout.addWidget(self.table)
         return table_layout
 
@@ -188,8 +193,7 @@ class MainWindow(QMainWindow):
         action_layout.addLayout(note_input)
 
         return input_container
-    
-    
+
     def create_buttons(self):
         button_layout = QHBoxLayout()
         
@@ -203,6 +207,7 @@ class MainWindow(QMainWindow):
         button_layout.setSpacing(15)
         
         return button_layout
+        
         
     def open_add_person_dialog(self):
         """Відкриття діалогу додавання користувача."""
@@ -227,6 +232,14 @@ class MainWindow(QMainWindow):
                 QPushButton {
                 min-height: 60px;
             }""")
+    
+    def load_data(self):
+        """Завантаження інформації з бази даних"""
+        records = self.estate_repo.get_all_record()
+        self.table.setRowCount(len(records))
+        for row_idx, row in enumerate(records):
+            for col_idx, item in enumerate(row):
+                self.table.setItem(row_idx, col_idx, QTableWidgetItem(str(item)))
     
     def add_record(self):
         """Додавання запису"""
