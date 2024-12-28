@@ -20,7 +20,8 @@ class BaseRepository:
     
     def get_record_by_id(self, record_id):
         query = f"SELECT * FROM {self.table_name} WHERE {self.columns[0]} = ?"
-        return self.db.execute_query(query, (record_id,))
+        results = self.db.execute_query(query, (record_id,))
+        return results[0] if results else None
     
     def add_record(self, values):
         """Додавання нового запису в таблицю."""
