@@ -55,14 +55,6 @@ def get_global_styles():
             }
         """,
         
-        "frame": """
-            QFrame {
-                background-color: white;
-                border-radius: 5px;
-                padding: 5px;
-                border: 1px solid #dcdde1;
-            }
-        """,
     }
 
 def apply_style(widget, style_name):
@@ -90,7 +82,7 @@ def get_button_colors():
         },
         "success": {
             "base": "#2ab664",
-            "hover": "#0eaa4f"
+            "hover": "#0c9b48"
         },
         "danger": {
             "base": "#ec5342",
@@ -113,10 +105,11 @@ def get_button_style(button_type="primary"):
             padding: 5px 10px;
             border-radius: 5px;
             border: none;
-            color: white;
+            color: #404040;
             font-weight: bold;
             font-size: 20px;
             margin: 1px;
+            
         }}
         QPushButton:hover {{
             background-color: {color_set["hover"]};
