@@ -5,16 +5,20 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtGui import QAction
 from PyQt6.QtCore import Qt
+
 from ui.add_person_ui import AddPersonDialog
-from ui.styles import apply_styles
+from ui.styles import apply_styles, get_button_style
 from ui.utils import create_button
 from ui.year_box import YearComboBox
+from ui.set_min_salary_window import MinSalaryWindow
+
+from app.salary_repository import SalaryRepository
 
 class MainWindow(QMainWindow):
     def __init__(self, db):
         super().__init__()
         self.db = db
-        
+        self.salary_repo = SalaryRepository(db)
         self.setWindowTitle("Main Window")
         self.setGeometry(100, 100, 1100, 700)
 
@@ -71,11 +75,14 @@ class MainWindow(QMainWindow):
         first_Vbox = QVBoxLayout()
         lable =  QLabel("Поточний рік:")
         lable.setStyleSheet("font-size: 18px;")
+        self.year_combo_box = YearComboBox()
+        self.year_combo_box.currentIndexChanged.connect(self.check_min_salary)
         first_Vbox.addWidget(lable)
-        first_Vbox.addWidget(YearComboBox())
+        first_Vbox.addWidget(self.year_combo_box)
 
-        min_salary_button = QPushButton("Min salary")
-        min_salary_button.setStyleSheet("background-color: lightgreen; font-size: 14px;")
+        self.min_salary_button = QPushButton()
+        self.check_min_salary()
+        self.min_salary_button.clicked.connect(self.open_min_salary_window)
 
         switch_table_button = QPushButton("Switch Table")
         switch_table_button.setStyleSheet("background-color: lightblue; font-size: 14px;")
@@ -88,7 +95,7 @@ class MainWindow(QMainWindow):
         add_person_button.clicked.connect(self.open_add_person_dialog)
 
         button_layout.addLayout(first_Vbox)
-        button_layout.addWidget(min_salary_button)
+        button_layout.addWidget(self.min_salary_button)
         button_layout.addWidget(switch_table_button)
         button_layout.addWidget(change_type_button)
         button_layout.addWidget(add_person_button)
@@ -191,8 +198,20 @@ class MainWindow(QMainWindow):
     def open_add_person_dialog(self):
         """Відкриття діалогу додавання користувача."""
         dialog = AddPersonDialog(self.db)
-        dialog.exec()  # Відкриває діалогове вікно
+        dialog.exec()
         
+    def open_min_salary_window(self):
+        self.salary_window = MinSalaryWindow(self.db, int(self.year_combo_box.currentText()))
+        self.salary_window.show()
+        self.salary_window.close_signal.connect(self.check_min_salary)
+    
+    def check_min_salary(self):
+        if salary := self.salary_repo.get_record_by_id(int(self.year_combo_box.currentText())):
+            self.min_salary_button.setText(f"Мінімальна зарплата:\n{salary[1]} грн")
+            self.min_salary_button.setStyleSheet(get_button_style("success"))
+        else:
+            self.min_salary_button.setText(f"Мінімальна зарплата:\nНе вказано")
+            self.min_salary_button.setStyleSheet(get_button_style("warning"))
     
     def add_record(self):
         """Додавання запису"""
