@@ -1,4 +1,3 @@
-import time
 from PyQt6.QtWidgets import (
     QPushButton, QLabel, QLineEdit, QVBoxLayout, QDialog, QMessageBox
 )

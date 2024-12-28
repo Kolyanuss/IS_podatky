@@ -11,6 +11,7 @@ from ui.styles import apply_styles, get_button_style
 from ui.utils import create_button
 from ui.year_box import YearComboBox
 from ui.min_salary_ui import MinSalaryDialog
+from ui.change_estate_type import EstateTypeDialog
 
 from app.salary_repository import SalaryRepository
 from app.real_estate_repository import RealEstateRepository
@@ -22,7 +23,7 @@ class MainWindow(QMainWindow):
         self.salary_repo = SalaryRepository(db)
         self.estate_repo = RealEstateRepository(db)
         self.setWindowTitle("База оподаткування.")
-        self.setGeometry(100, 100, 1100, 700)
+        self.setGeometry(100, 100, 1400, 700)
 
         apply_styles(self, ["base", "input_field", "label"])
 
@@ -74,6 +75,7 @@ class MainWindow(QMainWindow):
         """Створення лейауту з кнопками"""
         button_layout = QHBoxLayout()
 
+        # year
         first_Vbox = QVBoxLayout()
         lable =  QLabel("Поточний рік:")
         lable.setStyleSheet("font-size: 18px;")
@@ -82,22 +84,27 @@ class MainWindow(QMainWindow):
         first_Vbox.addWidget(lable)
         first_Vbox.addWidget(self.year_combo_box)
 
+        # min salary
         self.min_salary_button = QPushButton()
         self.check_min_salary()
-        self.min_salary_button.clicked.connect(self.open_min_salary_window)
+        self.min_salary_button.clicked.connect(self.open_min_salary_dialog)
 
+        # switch table
         switch_table_button = QPushButton("Switch Table")
         switch_table_button.setStyleSheet(get_button_style("neutral") + """
                 QPushButton {
                 min-height: 60px;
             }""")
 
-        change_type_button = QPushButton("Change Type")
-        change_type_button.setStyleSheet(get_button_style("neutral") + """
+        # estate types
+        self.change_type_button = QPushButton("Типи нерухомості\nвідмінної від земельної ділянки")
+        self.change_type_button.setStyleSheet(get_button_style("neutral") + """
                 QPushButton {
                 min-height: 60px;
             }""")
+        self.change_type_button.clicked.connect(self.open_change_type_dialog)
 
+        # person management
         add_person_button = QPushButton("Список осіб")
         add_person_button.setStyleSheet(get_button_style("neutral") + """
                 QPushButton {
@@ -108,7 +115,7 @@ class MainWindow(QMainWindow):
         button_layout.addLayout(first_Vbox)
         button_layout.addWidget(self.min_salary_button)
         button_layout.addWidget(switch_table_button)
-        button_layout.addWidget(change_type_button)
+        button_layout.addWidget(self.change_type_button)
         button_layout.addWidget(add_person_button)
 
         return button_layout
@@ -214,11 +221,11 @@ class MainWindow(QMainWindow):
         self.person_dialog = AddPersonDialog(self.db)
         self.person_dialog.show()
         
-    def open_min_salary_window(self):
+    def open_min_salary_dialog(self):
         self.salary_window = MinSalaryDialog(self.db, int(self.year_combo_box.currentText()))
         self.salary_window.close_signal.connect(self.check_min_salary)
         self.salary_window.exec()
-    
+        
     def check_min_salary(self):
         if salary := self.salary_repo.get_record_by_id(int(self.year_combo_box.currentText())):
             self.min_salary_button.setText(f"Мінімальна зарплата:\n{salary[1]} грн")
@@ -232,6 +239,14 @@ class MainWindow(QMainWindow):
                 QPushButton {
                 min-height: 60px;
             }""")
+    
+    def open_change_type_dialog(self):
+        self.estate_type_window = EstateTypeDialog(self.db, int(self.year_combo_box.currentText()))
+        self.estate_type_window.close_signal.connect(self.check_type_button)
+        self.estate_type_window.exec()
+    
+    def check_type_button(self):
+        pass
     
     def load_data(self):
         """Завантаження інформації з бази даних"""
