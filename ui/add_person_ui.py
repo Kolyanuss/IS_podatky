@@ -14,11 +14,11 @@ class AddPersonDialog(QDialog):
         self.user_repository = UserRepository(db)
         self.input_fields = {}
         self.fields_config = [
-            ("name", "Ім'я*", "Введіть ім'я"),
-            ("last_name", "Прізвище*", "Введіть прізвище"),
-            ("middle_name", "По батькові*", "Введіть по батькові"),
-            ("rnokpp", "РНОКПП*", "Введіть РНОКПП"),
-            ("address", "Адреса*", "Введіть адресу"),
+            ("last_name", "Прізвище", "Введіть прізвище*"),
+            ("name", "Ім'я", "Введіть ім'я*"),
+            ("middle_name", "По батькові", "Введіть по батькові*"),
+            ("rnokpp", "РНОКПП", "Введіть РНОКПП*"),
+            ("address", "Адреса", "Введіть адресу*"),
             ("email", "Email", "Введіть email"),
             ("phone", "Телефон", "Введіть телефон")
         ]
@@ -52,10 +52,7 @@ class AddPersonDialog(QDialog):
         """Створення та налаштування таблиці"""
         self.table = QTableWidget()
         self.table.setColumnCount(8)
-        self.table.setHorizontalHeaderLabels([
-            "ID", "Ім'я", "Прізвище", "По батькові", 
-            "РНОКПП", "Адреса", "Email", "Телефон"
-        ])
+        self.table.setHorizontalHeaderLabels(["Id"]+[item[1] for item in self.fields_config])
         self.table.setColumnHidden(0, True)
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
