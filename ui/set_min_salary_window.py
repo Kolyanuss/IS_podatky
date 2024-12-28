@@ -1,5 +1,6 @@
+import time
 from PyQt6.QtWidgets import (
-    QPushButton, QLabel, QLineEdit, QVBoxLayout, QWidget
+    QPushButton, QLabel, QLineEdit, QVBoxLayout, QWidget, QMessageBox
 )
 from PyQt6.QtGui import QFont
 from PyQt6.QtCore import Qt, pyqtSignal
@@ -38,24 +39,24 @@ class MinSalaryWindow(QWidget):
             self.input_field.setText(f"{record[1]}")
         
         # Кнопка "Підтвердити"
-        confirm_button = QPushButton("Підтвердити")
-        confirm_button.setStyleSheet(get_button_style("success"))
-        confirm_button.clicked.connect(self.confirm_action)
+        self.confirm_button = QPushButton("Підтвердити")
+        self.confirm_button.setStyleSheet(get_button_style("success"))
+        self.confirm_button.clicked.connect(self.confirm_action)
 
         # Вертикальний макет
         layout = QVBoxLayout()
         layout.addWidget(label)
         layout.addWidget(self.input_field)
-        layout.addWidget(confirm_button)
+        layout.addWidget(self.confirm_button)
         self.setLayout(layout)
 
     def confirm_action(self):
         value = self.input_field.text()
         if not value.isdigit():
-            print("Помилка: введене значення не є числом.")
+            self.confirm_button.setStyleSheet(get_button_style("warning"))
+            QMessageBox().critical(self, "Помилка", "Введене значення не є числом! Спробуйте ще раз.")
             return
         
-        print(f"Введене число: {value}")
         self.salary_repository.add_update_record(self.year, value)
         self.close()
 
