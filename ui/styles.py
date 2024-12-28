@@ -95,6 +95,10 @@ def get_button_colors():
         "warning": {
             "base": "#f1c40f",
             "hover": "#f39c12"
+        },
+        "neutral": {
+            "base": "#c5c5c5",
+            "hover": "#b2b2b2"
         }
     }
 
@@ -113,7 +117,6 @@ def get_button_style(button_type="primary"):
             font-weight: bold;
             font-size: 20px;
             margin: 1px;
-            
         }}
         QPushButton:hover {{
             background-color: {color_set["hover"]};

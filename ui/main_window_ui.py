@@ -85,13 +85,22 @@ class MainWindow(QMainWindow):
         self.min_salary_button.clicked.connect(self.open_min_salary_window)
 
         switch_table_button = QPushButton("Switch Table")
-        switch_table_button.setStyleSheet("background-color: lightblue; font-size: 14px;")
+        switch_table_button.setStyleSheet(get_button_style("neutral") + """
+                QPushButton {
+                min-height: 60px;
+            }""")
 
         change_type_button = QPushButton("Change Type")
-        change_type_button.setStyleSheet("background-color: lightyellow; font-size: 14px;")
+        change_type_button.setStyleSheet(get_button_style("neutral") + """
+                QPushButton {
+                min-height: 60px;
+            }""")
 
-        add_person_button = QPushButton("Add New Person")
-        add_person_button.setStyleSheet("background-color: violet; font-size: 14px;")
+        add_person_button = QPushButton("Додати нову людину")
+        add_person_button.setStyleSheet(get_button_style("neutral") + """
+                QPushButton {
+                min-height: 60px;
+            }""")
         add_person_button.clicked.connect(self.open_add_person_dialog)
 
         button_layout.addLayout(first_Vbox)
@@ -208,10 +217,16 @@ class MainWindow(QMainWindow):
     def check_min_salary(self):
         if salary := self.salary_repo.get_record_by_id(int(self.year_combo_box.currentText())):
             self.min_salary_button.setText(f"Мінімальна зарплата:\n{salary[1]} грн")
-            self.min_salary_button.setStyleSheet(get_button_style("success"))
+            self.min_salary_button.setStyleSheet(get_button_style("success") + """
+                QPushButton {
+                min-height: 60px;
+            }""")
         else:
             self.min_salary_button.setText(f"Мінімальна зарплата:\nНе вказано")
-            self.min_salary_button.setStyleSheet(get_button_style("warning"))
+            self.min_salary_button.setStyleSheet(get_button_style("warning") + """
+                QPushButton {
+                min-height: 60px;
+            }""")
     
     def add_record(self):
         """Додавання запису"""
