@@ -98,7 +98,7 @@ class MainWindow(QMainWindow):
                 min-height: 60px;
             }""")
 
-        add_person_button = QPushButton("Додати нову людину")
+        add_person_button = QPushButton("Список осіб")
         add_person_button.setStyleSheet(get_button_style("neutral") + """
                 QPushButton {
                 min-height: 60px;
@@ -213,11 +213,12 @@ class MainWindow(QMainWindow):
         """Відкриття діалогу додавання користувача."""
         dialog = AddPersonDialog(self.db)
         dialog.exec()
+        # dialog.show()
         
     def open_min_salary_window(self):
         self.salary_window = MinSalaryWindow(self.db, int(self.year_combo_box.currentText()))
-        self.salary_window.show()
         self.salary_window.close_signal.connect(self.check_min_salary)
+        self.salary_window.exec()
     
     def check_min_salary(self):
         if salary := self.salary_repo.get_record_by_id(int(self.year_combo_box.currentText())):

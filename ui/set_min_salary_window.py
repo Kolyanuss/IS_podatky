@@ -1,6 +1,6 @@
 import time
 from PyQt6.QtWidgets import (
-    QPushButton, QLabel, QLineEdit, QVBoxLayout, QWidget, QMessageBox
+    QPushButton, QLabel, QLineEdit, QVBoxLayout, QDialog, QMessageBox
 )
 from PyQt6.QtGui import QFont
 from PyQt6.QtCore import Qt, pyqtSignal
@@ -9,7 +9,7 @@ from app.salary_repository import SalaryRepository
 from app.database import Database
 
 
-class MinSalaryWindow(QWidget):
+class MinSalaryWindow(QDialog):
     close_signal = pyqtSignal()
     def __init__(self, database:Database, year:int):
         super().__init__()

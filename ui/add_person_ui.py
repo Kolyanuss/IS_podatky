@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import (
     QDialog, QVBoxLayout, QLineEdit, QPushButton, QMessageBox, QFrame, 
-    QTableWidget, QTableWidgetItem, QHBoxLayout, QLabel, QHeaderView
+    QTableWidget, QTableWidgetItem, QHBoxLayout, QLabel, QHeaderView, QWidget
 )
 from PyQt6.QtCore import Qt
 from ui.styles import apply_style, apply_styles
@@ -28,7 +28,7 @@ class AddPersonDialog(QDialog):
 
     def init_ui(self):
         """Ініціалізація основного інтерфейсу"""
-        self.setWindowTitle("Керування користувачами")
+        self.setWindowTitle("Список осіб")
         self.resize(1200, 700)
         
         apply_styles(self, ["base", "input_field", "label"])
