@@ -17,7 +17,10 @@ class BaseRepository:
         """Отримання списку всіх елементів з таблиці."""
         query = f"SELECT * FROM {self.table_name}"
         return self.db.execute_query(query)
-  
+    
+    def get_record_by_id(self, record_id):
+        query = f"SELECT * FROM {self.table_name} WHERE {self.columns[0]} = ?"
+        return self.db.execute_query(query, (record_id,))
     
     def add_record(self, values):
         """Додавання нового запису в таблицю."""
@@ -32,12 +35,12 @@ class BaseRepository:
         query = f"""
         UPDATE {self.table_name} 
         SET {', '.join([f"{column} = ?" for column in self.columns[1:]])}
-        WHERE id = ?
+        WHERE {self.columns[0]} = ?
         """
-        self.db.execute_non_query(query, values + [record_id])
+        self.db.execute_non_query(query, tuple(values) + (record_id,))
 
     def delete_record(self, record_id):
         """Видаляє запис з таблиці."""
-        query = f"DELETE FROM {self.table_name} WHERE id = ?"
+        query = f"DELETE FROM {self.table_name} WHERE {self.columns[0]} = ?"
         self.db.execute_non_query(query, (record_id,))
     
