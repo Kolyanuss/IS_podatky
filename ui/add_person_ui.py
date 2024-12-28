@@ -144,7 +144,7 @@ class AddPersonDialog(QDialog):
     def update_person(self):
         """Оновлення вибраного користувача."""
         selected_row = self.table.currentRow()
-        if selected_row != -1:
+        if selected_row == -1:
             QMessageBox.warning(self, "Помилка", "Виберіть запис для оновлення!")
             return
         
