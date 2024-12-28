@@ -89,8 +89,8 @@ def get_button_colors():
             "hover": "#2980b9"
         },
         "success": {
-            "base": "#2ecc71",
-            "hover": "#27ae60"
+            "base": "#2ab664",
+            "hover": "#0eaa4f"
         },
         "danger": {
             "base": "#ec5342",
