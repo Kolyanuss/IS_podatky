@@ -10,7 +10,7 @@ from ui.add_person_ui import AddPersonDialog
 from ui.styles import apply_styles, get_button_style
 from ui.utils import create_button
 from ui.year_box import YearComboBox
-from ui.set_min_salary_window import MinSalaryWindow
+from ui.min_salary_ui import MinSalaryDialog
 
 from app.salary_repository import SalaryRepository
 from app.real_estate_repository import RealEstateRepository
@@ -216,7 +216,7 @@ class MainWindow(QMainWindow):
         # dialog.show()
         
     def open_min_salary_window(self):
-        self.salary_window = MinSalaryWindow(self.db, int(self.year_combo_box.currentText()))
+        self.salary_window = MinSalaryDialog(self.db, int(self.year_combo_box.currentText()))
         self.salary_window.close_signal.connect(self.check_min_salary)
         self.salary_window.exec()
     

@@ -9,7 +9,7 @@ from app.salary_repository import SalaryRepository
 from app.database import Database
 
 
-class MinSalaryWindow(QDialog):
+class MinSalaryDialog(QDialog):
     close_signal = pyqtSignal()
     def __init__(self, database:Database, year:int):
         super().__init__()
