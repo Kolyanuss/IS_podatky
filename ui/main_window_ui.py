@@ -21,7 +21,7 @@ class MainWindow(QMainWindow):
         self.db = db
         self.salary_repo = SalaryRepository(db)
         self.estate_repo = RealEstateRepository(db)
-        self.setWindowTitle("Main Window")
+        self.setWindowTitle("База оподаткування.")
         self.setGeometry(100, 100, 1100, 700)
 
         apply_styles(self, ["base", "input_field", "label"])
@@ -211,9 +211,8 @@ class MainWindow(QMainWindow):
         
     def open_add_person_dialog(self):
         """Відкриття діалогу додавання користувача."""
-        dialog = AddPersonDialog(self.db)
-        dialog.exec()
-        # dialog.show()
+        self.person_dialog = AddPersonDialog(self.db)
+        self.person_dialog.show()
         
     def open_min_salary_window(self):
         self.salary_window = MinSalaryDialog(self.db, int(self.year_combo_box.currentText()))

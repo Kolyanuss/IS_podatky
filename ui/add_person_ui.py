@@ -8,7 +8,7 @@ from ui.utils import create_button, confirm_delete
 from app.database import Database
 from app.user_repository import UserRepository
 
-class AddPersonDialog(QDialog):
+class AddPersonDialog(QWidget):
     def __init__(self, db: Database):
         super().__init__()
         self.user_repository = UserRepository(db)
@@ -29,12 +29,11 @@ class AddPersonDialog(QDialog):
     def init_ui(self):
         """Ініціалізація основного інтерфейсу"""
         self.setWindowTitle("Список осіб")
-        self.resize(1200, 700)
+        self.setGeometry(100, 100, 1200, 700)
         
         apply_styles(self, ["base", "input_field", "label"])
         
-        # Створення основних компонентів
-        self.create_table()
+        self.table = self.create_table()
         input_container = self.create_input_container()
         button_layout = self.create_buttons()
         
@@ -43,23 +42,22 @@ class AddPersonDialog(QDialog):
         main_layout.addWidget(self.table)
         main_layout.addWidget(input_container)
         main_layout.addLayout(button_layout)
-        # main_layout.setSpacing(10)
-        # main_layout.setContentsMargins(10, 10, 10, 10)
         
         self.setLayout(main_layout)
 
     def create_table(self):
         """Створення та налаштування таблиці"""
-        self.table = QTableWidget()
-        self.table.setColumnCount(8)
-        self.table.setHorizontalHeaderLabels(["Id"]+[item[1] for item in self.fields_config])
-        self.table.setColumnHidden(0, True)
-        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
-        self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
-        self.table.setAlternatingRowColors(True)
-        self.table.cellClicked.connect(self.on_cell_click)
-        self.table.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
+        table = QTableWidget()
+        table.setColumnCount(8)
+        table.setHorizontalHeaderLabels(["Id"]+[item[1] for item in self.fields_config])
+        table.setColumnHidden(0, True)
+        table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
+        table.setAlternatingRowColors(True)
+        table.cellClicked.connect(self.on_cell_click)
+        table.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
+        return table
         
 
     def create_input_field(self, label_text, placeholder):
