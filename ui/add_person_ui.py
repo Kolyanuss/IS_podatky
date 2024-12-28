@@ -31,7 +31,7 @@ class AddPersonDialog(QDialog):
         self.setWindowTitle("Керування користувачами")
         self.resize(1200, 700)
         
-        apply_styles(self, ["base", "input_field"])
+        apply_styles(self, ["base", "input_field", "label"])
         
         # Створення основних компонентів
         self.create_table()

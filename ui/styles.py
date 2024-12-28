@@ -43,10 +43,6 @@ def get_global_styles():
             QLineEdit:focus {
                 border: 2px solid #92c9ff;
             }
-            QLabel {
-                font-weight: bold;
-                padding: 0px 5px 0px 5px;
-            }
             QComboBox {
                 padding: 5px;
                 border: 2px solid #dcdde1;
@@ -54,6 +50,14 @@ def get_global_styles():
                 background-color: white;
             }
         """,
+        
+        "label": """
+            QLabel {
+                    font-size: 14px;
+                    font-weight: bold;
+                    padding: 0px 5px 0px 5px;
+                }
+        """
         
     }
 

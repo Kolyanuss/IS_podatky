@@ -22,7 +22,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Main Window")
         self.setGeometry(100, 100, 1100, 700)
 
-        apply_styles(self, ["base", "input_field"])
+        apply_styles(self, ["base", "input_field", "label"])
 
         # Central widget
         central_widget = QWidget()
