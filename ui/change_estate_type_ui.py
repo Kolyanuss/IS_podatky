@@ -5,8 +5,8 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtGui import QFont
 from PyQt6.QtCore import Qt, pyqtSignal
 from ui.styles import apply_style, apply_styles, get_button_style
-from ui.utils import create_table_widget, create_CUD_buttons, create_Vbox
-from app.real_estate_type_repository import RealEstateTypeRepository
+from ui.utils import create_table_widget, create_CUD_buttons, create_Vbox, confirm_delete
+from app.real_estate_type_repository import RealEstateTypeBaseRepository, DeleteExeption
 from app.database import Database
 
 
@@ -14,7 +14,7 @@ class EstateTypeDialog(QDialog):
     close_signal = pyqtSignal()
     def __init__(self, database:Database, year:int):
         super().__init__()
-        self.estate_type_repo = RealEstateTypeRepository(database)
+        self.estate_type_repo = RealEstateTypeBaseRepository(database)
         self.year = year
         self.input_fields = {}
         self.fields_config = [
@@ -24,17 +24,17 @@ class EstateTypeDialog(QDialog):
         ]
         
         self.init_ui()
-        # self.load_data()
+        self.load_data()
 
     def init_ui(self):
         """Ініціалізація основного інтерфейсу"""
         self.setWindowTitle("Типи нерухомості")
         self.setStyleSheet("background-color: #f0f4f8;")
-        self.setGeometry(100, 100, 1200, 700)
+        # self.setGeometry(100, 100, 1200, 700)
+        self.setFixedSize(600,400)
         
         apply_styles(self, ["base", "input_field", "label"])
         
-        columns = self.estate_type_repo.columns
         self.table = create_table_widget(len(self.fields_config)+1, ["id"]+[item[1] for item in self.fields_config], self.on_cell_click)
         
         input_container = self.create_input_container()
@@ -60,9 +60,9 @@ class EstateTypeDialog(QDialog):
 
         # Конфігурація полів вводу
         for field_name, label_text, placeholder in self.fields_config:
-            line = QLineEdit()
-            line.setPlaceholderText(placeholder)
-            field_layout, input_field = create_Vbox(label_text, line)
+            input_field = QLineEdit()
+            input_field.setPlaceholderText(placeholder)
+            field_layout, input_field = create_Vbox(label_text, input_field)
             self.input_fields[field_name] = input_field
             input_grid.addLayout(field_layout)
 
@@ -70,13 +70,14 @@ class EstateTypeDialog(QDialog):
 
     def load_data(self):
         """Завантаження інформації з бази даних"""
-        records = self.estate_type_repo.get_type_rates()
-        print(records)
-        
-        self.table.setRowCount(len(records))
-        for row_idx, row in enumerate(records):
-            for col_idx, item in enumerate(row):
-                self.table.setItem(row_idx, col_idx, QTableWidgetItem(str(item)))
+        try:
+            records = self.estate_type_repo.get_type_rates(self.year)
+            self.table.setRowCount(len(records))
+            for row_idx, row in enumerate(records):
+                for col_idx, item in enumerate(row):
+                    self.table.setItem(row_idx, col_idx, QTableWidgetItem(str(item)))
+        except Exception as e:
+            QMessageBox.critical(self, "Помилка", f"Не вдалося оновити інформацію: {e}")
                 
     def closeEvent(self, event):
         self.close_signal.emit()
@@ -89,14 +90,65 @@ class EstateTypeDialog(QDialog):
             field.setText(self.table.item(row, i).text())
             i += 1
     
+    def clear_inputs(self):
+        """Очищення всіх полів введення."""
+        for field in self.input_fields.values():
+            field.clear()
+            
     def add_record(self):
         """Додавання запису"""
-        pass        
+        data = [field.text() for field in self.input_fields.values()]
+
+        if all(data):
+            try:
+                self.estate_type_repo.add_record(self.year, *data)
+                QMessageBox.information(self, "Успіх", "Тип нерухомості успішно додано!")
+            except Exception as e:
+                QMessageBox.critical(self, "Помилка", f"Не вдалося додати тип нерухомості: {e}")
+            self.clear_inputs()
+            self.load_data()
+        else:
+            QMessageBox.warning(self, "Помилка", "Заповніть усі поля!")
 
     def update_record(self):
         """Оновлення запису"""
-        pass
+        selected_row = self.table.currentRow()
+        if selected_row == -1:
+            QMessageBox.warning(self, "Помилка", "Виберіть запис для оновлення!")
+            return
+        
+        record_id = self.table.item(selected_row, 0).text()
+        data = [field.text() for field in self.input_fields.values()]
+
+        if all(data):
+            try:
+                self.estate_type_repo.update_record(record_id, self.year, *data)
+                QMessageBox.information(self, "Успіх", "Тип нерухомості успішно оновлено!")
+            except Exception as e:
+                QMessageBox.critical(self, "Помилка", f"Не вдалося оновити тип нерухомості: {e}")
+            self.clear_inputs()
+            self.load_data()
+        else:
+            QMessageBox.warning(self, "Помилка", "Заповніть усі поля!")
 
     def delete_record(self):
         """Видалення запису"""
-        pass      
+        selected_row = self.table.currentRow()
+        if selected_row == -1:
+            QMessageBox.warning(self, "Помилка", "Виберіть запис для видалення!")
+            return
+            
+        record_id = self.table.item(selected_row, 0).text()
+        type_name = self.table.item(selected_row, 1).text()
+        
+        if confirm_delete() == QMessageBox.StandardButton.Yes:
+            try:
+                self.estate_type_repo.delete_record(record_id, type_name)
+                QMessageBox.information(self, "Успіх", "Запис видалено!")
+            except DeleteExeption as e:
+                QMessageBox.warning(self, "Увага", f"Інформацію видалено частково: {e}")
+            except Exception as e:
+                QMessageBox.critical(self, "Помилка", f"Не вдалося видалити запис: {e}")
+            
+            self.clear_inputs()
+            self.load_data()
