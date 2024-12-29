@@ -144,9 +144,9 @@ class EstateTypeDialog(QDialog):
         if confirm_delete() == QMessageBox.StandardButton.Yes:
             try:
                 self.estate_type_repo.delete_record(record_id, type_name)
-                QMessageBox.information(self, "Успіх", "Запис видалено!")
+                QMessageBox.information(self, "Успіх", "Тип нерухомості видалено!")
             except DeleteExeption as e:
-                QMessageBox.warning(self, "Увага", f"Інформацію видалено частково: {e}")
+                QMessageBox.information(self, "Увага", f"Інформацію видалено частково: {e}")
             except Exception as e:
                 QMessageBox.critical(self, "Помилка", f"Не вдалося видалити запис: {e}")
             

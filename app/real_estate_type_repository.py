@@ -58,19 +58,16 @@ class RealEstateTypeBaseRepository(BaseRepository):
             type_record = self.type_repo.get_by_name(type_name) # id, name
             if not type_record:
                 raise Exception("Такого типу не існує.")
-            self.type_repo.delete_record(type_record[0])
-            return
+            type_id = type_record[0]
+        else:
+            type_id = self.rates_repo.get_typeid_by_id(id)
+            self.rates_repo.delete_record(id)
         
-        type_id = self.rates_repo.get_typeid_by_id(id)
-        self.rates_repo.delete_record(id)
-        
-        record = self.rates_repo.get_record_by_type_id(type_id)
-        if not record:
+        records = self.rates_repo.get_record_by_type_id(type_id)
+        if not records: # якщо існують записи для цьго типу - видаляти  не можна
             self.type_repo.delete_record(type_id)
         else:
-            raise DeleteExeption("""Не можливо видалити тип нерухомості, 
-                оскільки він використовується в інших записах! 
-                Спершу видаліть всю інформацію зв'язану з цим типом.""")
+            raise DeleteExeption("Не можливо видалити тип нерухомості, оскільки він використовується в інших записах! Спершу видаліть всю інформацію зв'язану з цим типом.")
         
         
 class RealEstateTypeRepository(BaseRepository):
