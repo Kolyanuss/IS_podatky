@@ -51,6 +51,15 @@ def get_global_styles():
             }
         """,
         
+        "input_container":"""
+            #inputContainer {
+                background-color: white;
+                border-radius: 5px;
+                padding: 5px;
+                border: 1px solid #dcdde1;
+            }
+        """,
+        
         "label": """
             QLabel {
                     font-size: 14px;

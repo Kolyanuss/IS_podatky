@@ -7,7 +7,7 @@ from PyQt6.QtGui import QAction
 from PyQt6.QtCore import Qt
 
 from ui.add_person_ui import AddPersonDialog
-from ui.styles import apply_styles, get_button_style
+from ui.styles import apply_style, apply_styles, get_button_style
 from ui.utils import create_CUD_buttons, create_table_widget
 from ui.year_box import YearComboBox
 from ui.min_salary_ui import MinSalaryDialog
@@ -152,14 +152,7 @@ class MainWindow(QMainWindow):
         """Створення полів для вводу"""
         input_container = QFrame()
         input_container.setObjectName("inputContainer")
-        input_container.setStyleSheet("""
-            #inputContainer {
-                background-color: white;
-                border-radius: 5px;
-                padding: 5px;
-                border: 1px solid #dcdde1;
-            }
-        """)
+        apply_style(input_container, "input_container")
         
         action_layout = QHBoxLayout(input_container)
         

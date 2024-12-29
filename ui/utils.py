@@ -1,5 +1,6 @@
 from PyQt6.QtWidgets import (
-    QPushButton, QMessageBox, QTableWidget, QHeaderView, QHBoxLayout
+    QPushButton, QMessageBox, QTableWidget, QHeaderView,
+    QHBoxLayout, QVBoxLayout, QLabel
 )
 from PyQt6.QtCore import Qt
 from ui.styles import get_button_style, apply_styles
@@ -50,3 +51,11 @@ def create_table_widget(col_num, columns, conect_func):
     table.cellClicked.connect(conect_func)
     apply_styles(table, ["table"])
     return table
+
+def create_Vbox(lable_name:str, input_field):
+    vbox = QVBoxLayout()
+    label = QLabel(lable_name)
+    
+    vbox.addWidget(label)
+    vbox.addWidget(input_field)
+    return vbox, input_field

@@ -63,14 +63,7 @@ class AddPersonDialog(QWidget):
         """Створення контейнера з полями вводу"""
         input_container = QFrame()
         input_container.setObjectName("inputContainer")
-        input_container.setStyleSheet("""
-            #inputContainer {
-                background-color: white;
-                border-radius: 5px;
-                padding: 5px;
-                border: 1px solid #dcdde1;
-            }
-        """)
+        apply_style(input_container, "input_container")
         
         input_grid = QHBoxLayout(input_container)
         input_grid.setSpacing(10)
