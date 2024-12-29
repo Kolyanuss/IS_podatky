@@ -36,7 +36,7 @@ class MainWindow(QMainWindow):
         main_layout = QVBoxLayout()
         top_button_layout = self.create_top_button_layout()
         self.table = create_table_widget(len(self.estate_repo.columns), self.estate_repo.columns, self.on_cell_click)
-        action_layout = self.create_action_layouts()
+        edit_layout = self.create_edit_layouts()
         action_button_layout = create_CUD_buttons(self.add_record, self.update_record, self.delete_record)
 
         # Menu Bar
@@ -45,7 +45,7 @@ class MainWindow(QMainWindow):
         # Combine Layouts
         main_layout.addLayout(top_button_layout)
         main_layout.addWidget(self.table)
-        main_layout.addWidget(action_layout)
+        main_layout.addWidget(edit_layout)
         main_layout.addLayout(action_button_layout)
         
         central_widget.setLayout(main_layout)
@@ -148,7 +148,7 @@ class MainWindow(QMainWindow):
         
         return person_dropdown
 
-    def create_action_layouts(self):
+    def create_edit_layouts(self):
         """Створення полів для вводу"""
         input_container = QFrame()
         input_container.setObjectName("inputContainer")
