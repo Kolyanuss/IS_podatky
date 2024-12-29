@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import (
-    QPushButton, QMessageBox, QTableWidget, QHeaderView
+    QPushButton, QMessageBox, QTableWidget, QHeaderView, QHBoxLayout
 )
 from PyQt6.QtCore import Qt
 from ui.styles import get_button_style, apply_styles
@@ -10,6 +10,21 @@ def create_button(text, button_type, callback):
     button.setStyleSheet(get_button_style(button_type))
     button.clicked.connect(callback)
     return button
+
+def create_CUD_buttons(add_func, update_func, delete_func):
+    """Створення панелі з кнопками"""
+    button_layout = QHBoxLayout()
+    
+    add_button = create_button("Додати", "success", add_func)
+    update_button = create_button("Оновити", "primary", update_func)
+    delete_button = create_button("Видалити", "danger", delete_func)
+    
+    button_layout.addWidget(add_button)
+    button_layout.addWidget(update_button)
+    button_layout.addWidget(delete_button)
+    button_layout.setSpacing(15)
+    
+    return button_layout
 
 def confirm_delete():
     reply = QMessageBox()

@@ -8,7 +8,7 @@ from PyQt6.QtCore import Qt
 
 from ui.add_person_ui import AddPersonDialog
 from ui.styles import apply_styles, get_button_style
-from ui.utils import create_button, create_table_widget
+from ui.utils import create_CUD_buttons, create_table_widget
 from ui.year_box import YearComboBox
 from ui.min_salary_ui import MinSalaryDialog
 from ui.change_estate_type_ui import EstateTypeDialog
@@ -37,7 +37,7 @@ class MainWindow(QMainWindow):
         top_button_layout = self.create_top_button_layout()
         self.table = create_table_widget(len(self.estate_repo.columns), self.estate_repo.columns, self.on_cell_click)
         action_layout = self.create_action_layouts()
-        action_button_layout = self.create_buttons()
+        action_button_layout = create_CUD_buttons(self.add_record, self.update_record, self.delete_record)
 
         # Menu Bar
         self.create_menu_bar()
@@ -185,20 +185,6 @@ class MainWindow(QMainWindow):
         action_layout.addLayout(note_input)
 
         return input_container
-
-    def create_buttons(self):
-        button_layout = QHBoxLayout()
-        
-        add_button = create_button("Додати", "success", self.add_record)
-        update_button = create_button("Оновити", "primary", self.update_record)
-        delete_button = create_button("Видалити", "danger", self.delete_record)
-        
-        button_layout.addWidget(add_button)
-        button_layout.addWidget(update_button)
-        button_layout.addWidget(delete_button)
-        button_layout.setSpacing(15)
-        
-        return button_layout
 
     def on_cell_click(self, row, column):
         """Заповнення полів введення даними вибраного рядка."""        

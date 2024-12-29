@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt
 from ui.styles import apply_style, apply_styles
-from ui.utils import create_button, confirm_delete, create_table_widget
+from ui.utils import confirm_delete, create_table_widget, create_CUD_buttons
 from app.database import Database
 from app.user_repository import UserRepository
 
@@ -35,7 +35,7 @@ class AddPersonDialog(QWidget):
         
         self.table = create_table_widget(8, ["Id"]+[item[1] for item in self.fields_config], self.on_cell_click)
         input_container = self.create_input_container()
-        button_layout = self.create_buttons()
+        button_layout = create_CUD_buttons(self.add_person, self.update_person, self.delete_record)
         
         # Компонування основного лейауту
         main_layout = QVBoxLayout()
@@ -82,21 +82,6 @@ class AddPersonDialog(QWidget):
             input_grid.addLayout(field_layout)
 
         return input_container
-
-    def create_buttons(self):
-        """Створення панелі з кнопками"""
-        button_layout = QHBoxLayout()
-        
-        self.add_button = create_button("Додати", "success", self.add_person)
-        self.update_button = create_button("Оновити", "primary", self.update_person)
-        self.delete_button = create_button("Видалити", "danger", self.delete_record)
-        
-        button_layout.addWidget(self.add_button)
-        button_layout.addWidget(self.update_button)
-        button_layout.addWidget(self.delete_button)
-        button_layout.setSpacing(15)
-        
-        return button_layout
 
     def load_users(self):
         """Завантаження користувачів у таблицю."""
