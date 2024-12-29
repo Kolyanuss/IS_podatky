@@ -8,10 +8,10 @@ from PyQt6.QtCore import Qt
 
 from ui.add_person_ui import AddPersonDialog
 from ui.styles import apply_styles, get_button_style
-from ui.utils import create_button
+from ui.utils import create_button, create_table_widget
 from ui.year_box import YearComboBox
 from ui.min_salary_ui import MinSalaryDialog
-from ui.change_estate_type import EstateTypeDialog
+from ui.change_estate_type_ui import EstateTypeDialog
 
 from app.salary_repository import SalaryRepository
 from app.real_estate_repository import RealEstateRepository
@@ -19,6 +19,7 @@ from app.real_estate_repository import RealEstateRepository
 class MainWindow(QMainWindow):
     def __init__(self, db):
         super().__init__()
+        self.input_fields = {}
         self.db = db
         self.salary_repo = SalaryRepository(db)
         self.estate_repo = RealEstateRepository(db)
@@ -34,7 +35,7 @@ class MainWindow(QMainWindow):
         # Layouts
         main_layout = QVBoxLayout()
         top_button_layout = self.create_top_button_layout()
-        table_layout = self.create_table_layout()
+        self.table = create_table_widget(len(self.estate_repo.columns), self.estate_repo.columns, self.on_cell_click)
         action_layout = self.create_action_layouts()
         action_button_layout = self.create_buttons()
 
@@ -43,7 +44,7 @@ class MainWindow(QMainWindow):
 
         # Combine Layouts
         main_layout.addLayout(top_button_layout)
-        main_layout.addLayout(table_layout)
+        main_layout.addWidget(self.table)
         main_layout.addWidget(action_layout)
         main_layout.addLayout(action_button_layout)
         
@@ -97,7 +98,7 @@ class MainWindow(QMainWindow):
             }""")
 
         # estate types
-        self.change_type_button = QPushButton("Типи нерухомості\nвідмінної від земельної ділянки")
+        self.change_type_button = QPushButton("Типи нерухомості\nвідмінні від земельних ділянок")
         self.change_type_button.setStyleSheet(get_button_style("neutral") + """
                 QPushButton {
                 min-height: 60px;
@@ -119,22 +120,6 @@ class MainWindow(QMainWindow):
         button_layout.addWidget(add_person_button)
 
         return button_layout
-
-    def create_table_layout(self):
-        """Створення лейауту з таблицею"""
-        table_layout = QVBoxLayout()
-        self.table = QTableWidget()
-        self.table.setColumnCount(len(self.estate_repo.columns))
-        self.table.setHorizontalHeaderLabels(self.estate_repo.columns)
-        self.table.setColumnHidden(0, True)
-        self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
-        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
-        self.table.setAlternatingRowColors(True)
-        self.table.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
-        # self.table.cellClicked.connect(self.on_cell_click)
-        table_layout.addWidget(self.table)
-        return table_layout
 
     def create_input_field(self, label_text, input_field):
         """Створення вертикального блоку з міткою та полем вводу"""
@@ -214,7 +199,13 @@ class MainWindow(QMainWindow):
         button_layout.setSpacing(15)
         
         return button_layout
-        
+
+    def on_cell_click(self, row, column):
+        """Заповнення полів введення даними вибраного рядка."""        
+        i = 1
+        for field in self.input_fields.values():
+            field.setText(self.table.item(row, i).text())
+            i += 1
         
     def open_add_person_dialog(self):
         """Відкриття діалогу додавання користувача."""

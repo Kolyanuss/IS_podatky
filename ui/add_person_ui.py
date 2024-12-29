@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt
 from ui.styles import apply_style, apply_styles
-from ui.utils import create_button, confirm_delete
+from ui.utils import create_button, confirm_delete, create_table_widget
 from app.database import Database
 from app.user_repository import UserRepository
 
@@ -33,7 +33,7 @@ class AddPersonDialog(QWidget):
         
         apply_styles(self, ["base", "input_field", "label"])
         
-        self.table = self.create_table()
+        self.table = create_table_widget(8, ["Id"]+[item[1] for item in self.fields_config], self.on_cell_click)
         input_container = self.create_input_container()
         button_layout = self.create_buttons()
         
@@ -44,21 +44,6 @@ class AddPersonDialog(QWidget):
         main_layout.addLayout(button_layout)
         
         self.setLayout(main_layout)
-
-    def create_table(self):
-        """Створення та налаштування таблиці"""
-        table = QTableWidget()
-        table.setColumnCount(8)
-        table.setHorizontalHeaderLabels(["Id"]+[item[1] for item in self.fields_config])
-        table.setColumnHidden(0, True)
-        table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
-        table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
-        table.setAlternatingRowColors(True)
-        table.cellClicked.connect(self.on_cell_click)
-        table.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
-        return table
-        
 
     def create_input_field(self, label_text, placeholder):
         """Створення окремого поля вводу з міткою"""
