@@ -52,10 +52,11 @@ def create_table_widget(col_num, columns, conect_func):
     apply_styles(table, ["table"])
     return table
 
-def create_Vbox(lable_name:str, input_field):
+def create_Vbox(lable_name:str, input_field, placeholder:str=None):
     vbox = QVBoxLayout()
     label = QLabel(lable_name)
-    
+    if placeholder:
+        input_field.setPlaceholderText(placeholder)
     vbox.addWidget(label)
     vbox.addWidget(input_field)
     return vbox, input_field
