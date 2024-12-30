@@ -18,15 +18,13 @@ def get_global_styles():
                 padding: 5px;
                 border: none;
             }
-            QHeaderView::section:horizontal {
+            QHeaderView::section {
                 background-color: #f5f6fa;
                 padding: 5px;
                 font-weight: bold;
+                font-size: 13px;
             }            
             QHeaderView::section:vertical {
-                background-color: #f5f6fa;
-                padding: 5px;
-                font-weight: bold;
                 border: none;
                 border-bottom: 1px solid #dcdde1;
                 border-right: 1px solid #dcdde1;
@@ -48,6 +46,13 @@ def get_global_styles():
                 border: 2px solid #dcdde1;
                 border-radius: 5px;
                 background-color: white;
+                font-size: 14px;
+            }
+            QComboBox:focus {
+                border: 2px solid #92c9ff;
+            }
+            QComboBox:edit {
+                border: 2px solid #92c9ff;
             }
         """,
         
