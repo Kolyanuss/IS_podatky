@@ -18,22 +18,14 @@ class YearComboBox(QComboBox):
                 color: white;
                 border: 2px solid #3d3d3d;
                 border-radius: 4px;
-                padding: 5px 10px;
-                min-width: 50px;
+                padding: 3px 3px 3px 10px;
+                max-width: 110px;
                 font-size: 16px;
             }
             
             QComboBox::drop-down {
                 border: none;
                 width: 20px;
-            }
-            
-            QComboBox::down-arrow {
-                image: none;
-                border-left: 5px solid transparent;
-                border-right: 5px solid transparent;
-                border-top: 5px solid white;
-                margin-right: 8px;
             }
             
             QComboBox:hover {
@@ -43,8 +35,8 @@ class YearComboBox(QComboBox):
             QComboBox QAbstractItemView {
                 background-color: #2b2b2b;
                 color: white;
-                selection-background-color: #4a4a4a;
+                selection-background-color: #8d8484;
                 selection-color: white;
-                border: 1px solid #3d3d3d;
+                border: 1px solid #5f4747;
             }
         """)

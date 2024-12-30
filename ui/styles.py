@@ -13,6 +13,7 @@ def get_global_styles():
                 border-radius: 5px;
                 selection-background-color: #92c9ff;
                 selection-color: black;
+                font-size: 14px;
             }
             QTableWidget::item {
                 padding: 5px;
@@ -37,6 +38,7 @@ def get_global_styles():
                 border: 2px solid #dcdde1;
                 border-radius: 5px;
                 background-color: white;
+                font-size: 14px;
             }
             QLineEdit:focus {
                 border: 2px solid #92c9ff;
@@ -71,8 +73,7 @@ def get_global_styles():
                     font-weight: bold;
                     padding: 0px 5px 0px 5px;
                 }
-        """
-        
+        """,
     }
 
 def apply_style(widget, style_name):
@@ -129,7 +130,7 @@ def get_button_style(button_type="primary"):
             border: none;
             color: #404040;
             font-weight: bold;
-            font-size: 20px;
+            font-size: 18px;
             margin: 1px;
         }}
         QPushButton:hover {{
