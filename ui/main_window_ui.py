@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import (
     QMainWindow, QTableWidget, QTableWidgetItem, QPushButton, QHeaderView,
     QVBoxLayout, QHBoxLayout, QWidget, QMenuBar, QMenu, QLineEdit, QComboBox,
-    QCompleter, QFrame, QLabel, QRadioButton
+    QCompleter, QFrame, QLabel, QRadioButton, QMessageBox
 )
 from PyQt6.QtGui import QAction
 from PyQt6.QtCore import Qt
@@ -16,6 +16,7 @@ from ui.change_estate_type_ui import EstateTypeDialog
 from app.salary_repository import SalaryRepository
 from app.real_estate_repository import RealEstateRepository
 from app.real_estate_type_repository import RealEstateTypeRepository
+from app.user_repository import UserRepository
 
 class MainWindow(QMainWindow):
     def __init__(self, db):
@@ -25,6 +26,7 @@ class MainWindow(QMainWindow):
         self.salary_repo = SalaryRepository(db)
         self.estate_repo = RealEstateRepository(db)
         self.type_repo = RealEstateTypeRepository(db)
+        self.user_repo = UserRepository(db)
         self.input_fields = {}
         self.fields_config = [
             ("name", "Назва нерухомості", "Введіть назву*"),
@@ -154,12 +156,13 @@ class MainWindow(QMainWindow):
         person_dropdown.setEditable(True)
         person_dropdown.setPlaceholderText("Select Person")
 
-        # Example data for people
-        self.person_list = ["Smith, John", "Doe, Jane", "Brown, Charlie", "Johnson, Emily"]
-        person_dropdown.addItems(self.person_list)
+        self.person_data_list = self.user_repo.get_id_and_full_name()
+        for person in self.person_data_list:
+            person_dropdown.addItem(person[1], person[0])
 
-        # Add search functionality
-        completer = QCompleter(self.person_list, person_dropdown)
+        # функціонал пошуку
+        person_names = [person[1] for person in self.person_data_list]
+        completer = QCompleter(person_names, person_dropdown)
         completer.setFilterMode(Qt.MatchFlag.MatchContains)
         completer.setCompletionMode(QCompleter.CompletionMode.PopupCompletion)
         person_dropdown.setCompleter(completer)
@@ -260,7 +263,7 @@ class MainWindow(QMainWindow):
         pass
     
     def load_data(self):
-        """Завантаження інформації з бази даних"""
+        """Завантаження інформації з бази даних в таблицю"""
         records = self.estate_repo.get_all_record_by_year(int(self.year_combo_box.currentText()))
         self.table.setRowCount(len(records))
         for row_idx, row in enumerate(records):
@@ -296,11 +299,45 @@ class MainWindow(QMainWindow):
         """Очищення всіх полів введення."""
         for field in self.input_fields.values():
             field.clear()
-      
     
+    def get_input_data(self):
+        """Отримання даних з полів вводу"""
+        input_data = {}
+
+        for field_name, input_widget in self.input_fields.items():
+            # Якщо це поле типу QLineEdit
+            if isinstance(input_widget, QLineEdit):
+                input_data[field_name] = input_widget.text()
+
+            # Якщо це поле типу QComboBox
+            elif isinstance(input_widget, QComboBox):
+                input_data[field_name] = input_widget.currentText()
+
+            # Якщо це RadioButton (група перемикачів)
+            elif isinstance(input_widget, QHBoxLayout):
+                for i in range(input_widget.count()):
+                    widget = input_widget.itemAt(i).widget()
+                    if isinstance(widget, QRadioButton) and widget.isChecked():
+                        input_data[field_name] = widget.text()
+                        break  # Зупиняємося, якщо знайшли вибраний
+
+        return input_data
+
     def add_record(self):
         """Додавання запису"""
-        pass
+        data = [field.text() for field in self.get_input_data().values()]
+
+        if all(data[:1]):
+            year = int(self.year_combo_box.currentText())
+            try:
+                self.estate_repo.add_record(year, *data)
+                QMessageBox.information(self, "Успіх", "Інформацію про земельну ділянку успішно додано!")
+            except Exception as e:
+                QMessageBox.critical(self, "Помилка", f"Не вдалося додати інформацію про земельну ділянку: {e}")
+            self.clear_inputs()
+            self.load_data()
+        else:
+            QMessageBox.warning(self, "Помилка", "Заповніть усі поля!")
 
     def update_record(self):
         """Оновлення запису"""
