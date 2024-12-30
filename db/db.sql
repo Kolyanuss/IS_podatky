@@ -55,7 +55,6 @@ CREATE TABLE real_estate (
     name TEXT NOT NULL,
     address TEXT NOT NULL,
     area REAL NOT NULL CHECK (area > 0),
-    area_taxable REAL NOT NULL,
     notes TEXT,
     user_id INTEGER NOT NULL,
     real_estate_type_id INTEGER NOT NULL,
