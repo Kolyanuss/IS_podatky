@@ -8,13 +8,14 @@ from PyQt6.QtCore import Qt
 
 from ui.add_person_ui import AddPersonDialog
 from ui.styles import apply_style, apply_styles, get_button_style
-from ui.utils import create_CUD_buttons, create_table_widget
+from ui.utils import create_CUD_buttons, create_table_widget, create_Vbox
 from ui.year_box import YearComboBox
 from ui.min_salary_ui import MinSalaryDialog
 from ui.change_estate_type_ui import EstateTypeDialog
 
 from app.salary_repository import SalaryRepository
 from app.real_estate_repository import RealEstateRepository
+from app.real_estate_type_repository import RealEstateTypeRepository
 
 class MainWindow(QMainWindow):
     def __init__(self, db):
@@ -23,6 +24,25 @@ class MainWindow(QMainWindow):
         self.db = db
         self.salary_repo = SalaryRepository(db)
         self.estate_repo = RealEstateRepository(db)
+        self.type_repo = RealEstateTypeRepository(db)
+        self.input_fields = {}
+        self.fields_config = [
+            ("name", "Назва нерухомості", "Введіть назву*"),
+            ("address", "Адреса нерухомості", "Введіть адресу*"),
+            ("area", "Площа м^2", "Введіть площу*"),
+            ("area_tax", "Площа податку м^2", ""),
+            ("tax", "Сума податку (грн)", ""),
+            ("paid", "Сплачено?", ""),
+            ("owner", "Власник нерухомості", "Виберіть власника*"),
+            ("type", "Тип нерухомості", "Виберіть тип нерухомості*"),
+            ("notes", "Нотатки", "Ваші нотатки"),
+        ]
+        self.table_column = ["id", "person_id"] + [row[1] for row in self.fields_config]
+        
+        self.init_ui()
+        self.load_data()
+
+    def init_ui(self):
         self.setWindowTitle("База оподаткування.")
         self.setGeometry(100, 100, 1400, 700)
 
@@ -35,7 +55,8 @@ class MainWindow(QMainWindow):
         # Layouts
         main_layout = QVBoxLayout()
         top_button_layout = self.create_top_button_layout()
-        self.table = create_table_widget(len(self.estate_repo.columns), self.estate_repo.columns, self.on_cell_click)
+        self.table = create_table_widget(len(self.table_column), self.table_column, self.on_cell_click)
+        self.table.setColumnHidden(1, True)
         edit_layout = self.create_edit_layouts()
         action_button_layout = create_CUD_buttons(self.add_record, self.update_record, self.delete_record)
 
@@ -49,7 +70,7 @@ class MainWindow(QMainWindow):
         main_layout.addLayout(action_button_layout)
         
         central_widget.setLayout(main_layout)
-
+    
     def create_menu_bar(self):
         """Створення меню бару"""
         menu_bar = QMenuBar(self)
@@ -79,9 +100,16 @@ class MainWindow(QMainWindow):
         # year
         first_Vbox = QVBoxLayout()
         lable =  QLabel("Поточний рік:")
-        lable.setStyleSheet("font-size: 18px;")
+        lable.setStyleSheet("""
+            QLabel {
+                font-size: 15px;
+                font-weight: bold;
+                padding: 0px 5px 0px 5px;
+                margin: 0px;
+                border: none;
+            } """)
         self.year_combo_box = YearComboBox()
-        self.year_combo_box.currentIndexChanged.connect(self.check_min_salary)
+        self.year_combo_box.currentIndexChanged.connect(self.combo_check)
         first_Vbox.addWidget(lable)
         first_Vbox.addWidget(self.year_combo_box)
 
@@ -121,16 +149,6 @@ class MainWindow(QMainWindow):
 
         return button_layout
 
-    def create_input_field(self, label_text, input_field):
-        """Створення вертикального блоку з міткою та полем вводу"""
-        field_layout = QVBoxLayout()
-        label = QLabel(label_text)
-        
-        field_layout.addWidget(label)
-        field_layout.addWidget(input_field)
-        
-        return field_layout
-
     def create_person_dropdown(self):
         person_dropdown = QComboBox()
         person_dropdown.setEditable(True)
@@ -156,35 +174,32 @@ class MainWindow(QMainWindow):
         
         action_layout = QHBoxLayout(input_container)
         
-        person_dropdown = self.create_input_field("Власник нерухомості:", self.create_person_dropdown())
-        
-        name_input = self.create_input_field("Назва нерухомості:", QLineEdit())
+        for field_name, label_text, placeholder in self.fields_config[:3]: # name address area
+            field_layout, input_field = create_Vbox(label_text, QLineEdit(), placeholder)
+            self.input_fields[field_name] = input_field
+            action_layout.addLayout(field_layout)
+            
+        self.input_fields["name"].setMaximumWidth(200)
+        self.input_fields["area"].setMaximumWidth(120)
 
-        address_input = self.create_input_field("Адреса нерухомості:", QLineEdit())
-
-        area_input = self.create_input_field("Площа(м^2):", QLineEdit())
+        person_dropdown, input_field = create_Vbox(self.fields_config[-3][1], self.create_person_dropdown(), self.fields_config[-3][2])
+        self.input_fields[self.fields_config[-3][0]] = input_field
 
         type_dropdown = QComboBox()
-        type_dropdown.addItems(["Type 1", "Type 2", "Type 3"])
-        type_dropdown = self.create_input_field("Тип нерухомості:", type_dropdown)
+        # type_dropdown.setMinimumWidth(150)
+        type_list = self.type_repo.get_all_record()
+        type_dropdown.addItems([row[1] for row in type_list])
+        type_dropdown, input_field = create_Vbox(self.fields_config[-2][1], type_dropdown)
+        self.input_fields[self.fields_config[-2][0]] = input_field
 
-        note_input = self.create_input_field("Нотатки:", QLineEdit())
+        note_input, input_field = create_Vbox(self.fields_config[-1][1], QLineEdit(), self.fields_config[-1][2])
+        self.input_fields[self.fields_config[-1][0]] = input_field
 
         action_layout.addLayout(person_dropdown)
-        action_layout.addLayout(name_input)
-        action_layout.addLayout(address_input)
-        action_layout.addLayout(area_input)
         action_layout.addLayout(type_dropdown)
         action_layout.addLayout(note_input)
 
         return input_container
-
-    def on_cell_click(self, row, column):
-        """Заповнення полів введення даними вибраного рядка."""        
-        i = 1
-        for field in self.input_fields.values():
-            field.setText(self.table.item(row, i).text())
-            i += 1
         
     def open_add_person_dialog(self):
         """Відкриття діалогу додавання користувача."""
@@ -193,9 +208,14 @@ class MainWindow(QMainWindow):
         
     def open_min_salary_dialog(self):
         self.salary_window = MinSalaryDialog(self.db, int(self.year_combo_box.currentText()))
-        self.salary_window.close_signal.connect(self.check_min_salary)
+        self.salary_window.close_signal.connect(self.combo_check)
         self.salary_window.exec()
-        
+    
+    def combo_check(self):
+        self.check_min_salary()
+        self.load_data()
+        self.check_type_button()
+    
     def check_min_salary(self):
         if salary := self.salary_repo.get_record_by_id(int(self.year_combo_box.currentText())):
             self.min_salary_button.setText(f"Мінімальна зарплата:\n{salary[1]} грн")
@@ -212,7 +232,7 @@ class MainWindow(QMainWindow):
     
     def open_change_type_dialog(self):
         self.estate_type_window = EstateTypeDialog(self.db, int(self.year_combo_box.currentText()))
-        self.estate_type_window.close_signal.connect(self.check_type_button)
+        self.estate_type_window.close_signal.connect(self.combo_check)
         self.estate_type_window.exec()
     
     def check_type_button(self):
@@ -220,11 +240,27 @@ class MainWindow(QMainWindow):
     
     def load_data(self):
         """Завантаження інформації з бази даних"""
-        records = self.estate_repo.get_all_record()
+        records = self.estate_repo.get_all_record_by_year(int(self.year_combo_box.currentText()))
         self.table.setRowCount(len(records))
         for row_idx, row in enumerate(records):
             for col_idx, item in enumerate(row):
                 self.table.setItem(row_idx, col_idx, QTableWidgetItem(str(item)))
+            area_taxable = self.table
+            self.table.setItem(row_idx, col_idx, QTableWidgetItem(str(item)))
+            
+    
+    def on_cell_click(self, row, column):
+        """Заповнення полів введення даними вибраного рядка."""        
+        # i = 1
+        # for field in self.input_fields.values():
+        #     field.setText(self.table.item(row, i).text())
+        #     i += 1
+    
+    def clear_inputs(self):
+        """Очищення всіх полів введення."""
+        for field in self.input_fields.values():
+            field.clear()
+      
     
     def add_record(self):
         """Додавання запису"""
