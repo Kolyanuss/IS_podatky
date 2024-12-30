@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import (
     QMainWindow, QTableWidget, QTableWidgetItem, QPushButton, QHeaderView,
     QVBoxLayout, QHBoxLayout, QWidget, QMenuBar, QMenu, QLineEdit, QComboBox,
-    QCompleter, QFrame, QLabel
+    QCompleter, QFrame, QLabel, QRadioButton
 )
 from PyQt6.QtGui import QAction
 from PyQt6.QtCore import Qt
@@ -174,7 +174,8 @@ class MainWindow(QMainWindow):
         
         action_layout = QHBoxLayout(input_container)
         
-        for field_name, label_text, placeholder in self.fields_config[:3]: # name address area
+        # name address area
+        for field_name, label_text, placeholder in self.fields_config[:3]: 
             field_layout, input_field = create_Vbox(label_text, QLineEdit(), placeholder)
             self.input_fields[field_name] = input_field
             action_layout.addLayout(field_layout)
@@ -182,19 +183,39 @@ class MainWindow(QMainWindow):
         self.input_fields["name"].setMaximumWidth(200)
         self.input_fields["area"].setMaximumWidth(120)
 
+        # paid radio button
+        radio_box_layout = QVBoxLayout()
+        radio_box_layout.addWidget(QLabel(self.fields_config[5][1]))
+        
+        toggle_layout = QHBoxLayout()
+        yes_button = QRadioButton("Так")
+        no_button = QRadioButton("Ні")
+        no_button.setChecked(True)  # За замовчуванням вибрано "Ні"
+        toggle_layout.addWidget(yes_button)
+        toggle_layout.addWidget(no_button)
+        yes_button.setStyleSheet("font-size: 14px; padding: 10px 0px 10px 10px;")
+        no_button.setStyleSheet("font-size: 14px; padding: 10px 10px 10px 0px;")
+        
+        radio_box_layout.addLayout(toggle_layout)
+        self.input_fields[self.fields_config[5][0]] = toggle_layout
+        
+        # person dropdown
         person_dropdown, input_field = create_Vbox(self.fields_config[-3][1], self.create_person_dropdown(), self.fields_config[-3][2])
         self.input_fields[self.fields_config[-3][0]] = input_field
 
+        # type dropdown
         type_dropdown = QComboBox()
-        # type_dropdown.setMinimumWidth(150)
         type_list = self.type_repo.get_all_record()
         type_dropdown.addItems([row[1] for row in type_list])
         type_dropdown, input_field = create_Vbox(self.fields_config[-2][1], type_dropdown)
         self.input_fields[self.fields_config[-2][0]] = input_field
 
+        # note input
         note_input, input_field = create_Vbox(self.fields_config[-1][1], QLineEdit(), self.fields_config[-1][2])
         self.input_fields[self.fields_config[-1][0]] = input_field
 
+        # stack everything together
+        action_layout.addLayout(radio_box_layout)
         action_layout.addLayout(person_dropdown)
         action_layout.addLayout(type_dropdown)
         action_layout.addLayout(note_input)
@@ -245,8 +266,23 @@ class MainWindow(QMainWindow):
         for row_idx, row in enumerate(records):
             for col_idx, item in enumerate(row):
                 self.table.setItem(row_idx, col_idx, QTableWidgetItem(str(item)))
-            area_taxable = self.table
-            self.table.setItem(row_idx, col_idx, QTableWidgetItem(str(item)))
+            
+            if self.table.item(row_idx, 5).text() == "":
+                continue
+            area = float(self.table.item(row_idx, 4).text())
+            tax_area_limit = float(self.table.item(row_idx, 5).text())
+            
+            area_taxable = area - tax_area_limit
+            area_taxable = area_taxable if area_taxable > 0 else 0
+            self.table.setItem(row_idx, 5, QTableWidgetItem(str(area_taxable))) # col=6 це оподаткована площа
+            
+            if area_taxable == 0:
+                self.table.setItem(row_idx, 6, QTableWidgetItem(str(0))) # col=6 це сума податку
+                
+            if self.table.item(row_idx, 6).text() == "":
+                # calculate tax ?
+                pass
+                
             
     
     def on_cell_click(self, row, column):
@@ -264,7 +300,7 @@ class MainWindow(QMainWindow):
     
     def add_record(self):
         """Додавання запису"""
-        pass        
+        pass
 
     def update_record(self):
         """Оновлення запису"""
