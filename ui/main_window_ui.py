@@ -310,6 +310,9 @@ class MainWindow(QMainWindow):
     def clear_inputs(self):
         """Очищення всіх полів введення."""
         for field in self.input_fields.values():
+            if isinstance(field, QHBoxLayout):
+                field.itemAt(1).widget().setChecked(True) # встановлюємо значення "Ні" в статусі оплати
+                continue
             field.clear()
     
     def get_input_data(self):
@@ -323,7 +326,10 @@ class MainWindow(QMainWindow):
 
             # Якщо це поле типу QComboBox
             elif isinstance(input_widget, QComboBox):
-                input_data[field_name] = input_widget.currentText()
+                if input_widget.currentData():
+                    input_data[field_name] = input_widget.currentData()
+                else:
+                    input_data[field_name] = input_widget.currentText()
 
             # Якщо це RadioButton (група перемикачів)
             elif isinstance(input_widget, QHBoxLayout):
@@ -337,7 +343,7 @@ class MainWindow(QMainWindow):
 
     def add_record(self):
         """Додавання запису"""
-        data = [field.text() for field in self.get_input_data().values()]
+        data = [field for field in self.get_input_data().values()]
 
         if all(data[:1]):
             year = self.get_current_year()

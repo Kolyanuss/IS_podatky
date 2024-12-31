@@ -1,10 +1,12 @@
 from app.base_repository import BaseRepository
+from app.real_estate_type_repository import RealEstateTypeRepository
 
 class RealEstateRepository(BaseRepository):
     def __init__(self, database):
         super().__init__(database)
         self.table_name = "real_estate"
         self.columns = self.get_table_columns()
+        self.type_repo = RealEstateTypeRepository(database)
         
     def get_all_record_by_year(self, year):
         query = """
@@ -31,6 +33,23 @@ class RealEstateRepository(BaseRepository):
         LEFT JOIN real_estate_type_rates 
             ON real_estate_type_rates.real_estate_type_id = real_estate.real_estate_type_id
             AND real_estate_type_rates.tax_year = ?
-        WHERE real_estate.id = 1;
         """
         return self.db.execute_query(query, (year,year))
+    
+    def add_record(self, year, estate_name, address, 
+        area, paid, owner_id, estate_type_name, notes):
+        type_record = self.type_repo.get_by_name(estate_type_name)
+        if type_record is None:
+            raise Exception("Помилка. Не знайдено такий тип нерухомості!")
+        
+        super().add_record((estate_name, address, area, notes, owner_id, type_record[0]))
+        
+        # calc tax
+        # insert tax info
+        
+
+class RealEstateTaxesRepository(BaseRepository):
+    def __init__(self, database):
+        super().__init__(database)
+        self.table_name = "real_estate_taxes"
+        self.columns = self.get_table_columns()

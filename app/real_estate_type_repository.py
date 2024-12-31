@@ -77,6 +77,7 @@ class RealEstateTypeRepository(BaseRepository):
         self.columns = self.get_table_columns()
     
     def get_by_name(self, name:str):
+        '''return (id, name)'''
         query = f"SELECT * FROM {self.table_name} WHERE name = ?"
         result = self.db.execute_query(query, (name,))
         return result[0] if result else None
