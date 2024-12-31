@@ -70,7 +70,6 @@ class RealEstateRepository(BaseRepository):
         tax = self.calculate_tax(year, area, type_id)
         paid = 1 if paid == "Так" or tax == 0 else 0
         self.estate_tax_repo.add_record((new_estate_id, year, tax, paid))
-        
 
 class RealEstateTaxesRepository(BaseRepository):
     def __init__(self, database):
@@ -85,3 +84,4 @@ class RealEstateTaxesRepository(BaseRepository):
         VALUES ({', '.join(['?' for _ in values])})
         """
         return self.db.execute_non_query(query, values)
+    

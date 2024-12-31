@@ -8,7 +8,7 @@ from PyQt6.QtCore import Qt
 
 from ui.add_person_ui import AddPersonDialog
 from ui.styles import apply_style, apply_styles, get_button_style
-from ui.utils import create_CUD_buttons, create_table_widget, create_Vbox
+from ui.utils import create_CUD_buttons, create_table_widget, create_Vbox, confirm_delete
 from ui.year_box import YearComboBox
 from ui.min_salary_ui import MinSalaryDialog
 from ui.change_estate_type_ui import EstateTypeDialog
@@ -234,6 +234,7 @@ class MainWindow(QMainWindow):
         self.salary_window.exec()
     
     def combo_check(self):
+        self.clear_inputs()
         self.check_min_salary()
         self.load_data()
         self.check_type_button()
@@ -301,11 +302,42 @@ class MainWindow(QMainWindow):
         return int(self.year_combo_box.currentText())
     
     def on_cell_click(self, row, column):
-        """Заповнення полів введення даними вибраного рядка."""        
-        # i = 1
-        # for field in self.input_fields.values():
-        #     field.setText(self.table.item(row, i).text())
-        #     i += 1
+        """Заповнення полів вводу даними вибраного рядка."""
+        
+        
+        value = self.table.item(row, 2).text()
+        self.input_fields["name"].setText(value)
+        
+        value = self.table.item(row, 3).text()
+        self.input_fields["address"].setText(value)
+        
+        value = self.table.item(row, 4).text()
+        self.input_fields["area"].setText(value)
+        
+        # для QRadioButton (paid)
+        value = self.table.item(row, 7).text()
+        for j in range(self.input_fields["paid"].count()):
+            widget = self.input_fields["paid"].itemAt(j).widget()
+            if isinstance(widget, QRadioButton) and widget.text() == value:
+                widget.setChecked(True)
+                break
+
+        # QComboBox ownner
+        value = self.table.item(row, 8).text()
+        index = self.input_fields["owner"].findText(value)
+        if index != -1:
+            self.input_fields["owner"].setCurrentIndex(index)
+
+        # QComboBox type
+        value = self.table.item(row, 9).text().split(" ")[0]
+        index = self.input_fields["type"].findText(value)
+        if index != -1:
+            self.input_fields["type"].setCurrentIndex(index)
+        # self.input_fields["type"].setCurrentText(value)
+        
+        value = self.table.item(row, 10).text()
+        self.input_fields["notes"].setText(value)
+
     
     def clear_inputs(self):
         """Очищення всіх полів введення."""
@@ -359,8 +391,26 @@ class MainWindow(QMainWindow):
 
     def update_record(self):
         """Оновлення запису"""
-        pass
+        selected_row = self.table.currentRow()
+        if selected_row == -1:
+            QMessageBox.warning(self, "Помилка", "Виберіть запис для видалення!")
+            return
 
     def delete_record(self):
         """Видалення запису"""
-        pass       
+        selected_row = self.table.currentRow()
+        if selected_row == -1:
+            QMessageBox.warning(self, "Помилка", "Виберіть запис для видалення!")
+            return
+            
+        record_id = self.table.item(selected_row, 0).text()
+        
+        if confirm_delete() == QMessageBox.StandardButton.Yes:
+            try:
+                self.estate_repo.delete_record(record_id)
+                QMessageBox.information(self, "Успіх", "Нерухомість видалено!")
+            except Exception as e:
+                QMessageBox.critical(self, "Помилка", f"Не вдалося видалити інформацію про нерухомість: {e}")
+            self.clear_inputs()
+            self.load_data()
+          
