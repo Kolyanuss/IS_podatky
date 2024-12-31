@@ -152,7 +152,8 @@ class MainWindow(QMainWindow):
     def create_person_dropdown(self):
         person_dropdown = QComboBox()
         person_dropdown.setEditable(True)
-        person_dropdown.setPlaceholderText("Select Person")
+        person_dropdown.setPlaceholderText(self.fields_config[-3][2])
+        person_dropdown.setCurrentIndex(-1)
 
         self.person_data_list = self.user_repo.get_id_and_full_name()
         for person in self.person_data_list:
@@ -201,13 +202,15 @@ class MainWindow(QMainWindow):
         self.input_fields[self.fields_config[5][0]] = toggle_layout
         
         # person dropdown
-        person_dropdown, input_field = create_Vbox(self.fields_config[-3][1], self.create_person_dropdown(), self.fields_config[-3][2])
+        person_dropdown, input_field = create_Vbox(self.fields_config[-3][1], self.create_person_dropdown())
         self.input_fields[self.fields_config[-3][0]] = input_field
 
         # type dropdown
         type_dropdown = QComboBox()
         type_list = self.type_repo.get_all_record()
         type_dropdown.addItems([row[1] for row in type_list])
+        type_dropdown.setPlaceholderText("Тип нерухомості")
+        type_dropdown.setCurrentIndex(-1)
         type_dropdown, input_field = create_Vbox(self.fields_config[-2][1], type_dropdown)
         self.input_fields[self.fields_config[-2][0]] = input_field
 
@@ -289,14 +292,15 @@ class MainWindow(QMainWindow):
             
             area_taxable = area - tax_area_limit
             area_taxable = area_taxable if area_taxable > 0 else 0
-            self.table.setItem(row_idx, 5, QTableWidgetItem(str(area_taxable))) # col=6 це оподаткована площа
+            self.table.setItem(row_idx, 5, QTableWidgetItem(str(area_taxable))) # col=5 це оподаткована площа
             
             if area_taxable == 0:
                 self.table.setItem(row_idx, 6, QTableWidgetItem(str(0))) # col=6 це сума податку
                 
-            if self.table.item(row_idx, 6).text() == "":
-                # calculate tax ?
-                pass
+            if self.table.item(row_idx, 7).text() == "1": # paid
+                self.table.item(row_idx, 7).setText("Так")
+            else:
+                self.table.item(row_idx, 7).setText("Ні")
                 
     def get_current_year(self):
         return int(self.year_combo_box.currentText())
@@ -329,11 +333,10 @@ class MainWindow(QMainWindow):
             self.input_fields["owner"].setCurrentIndex(index)
 
         # QComboBox type
-        value = self.table.item(row, 9).text().split(" ")[0]
+        value = self.table.item(row, 9).text().split(" (")[0]
         index = self.input_fields["type"].findText(value)
         if index != -1:
             self.input_fields["type"].setCurrentIndex(index)
-        # self.input_fields["type"].setCurrentText(value)
         
         value = self.table.item(row, 10).text()
         self.input_fields["notes"].setText(value)
@@ -344,6 +347,9 @@ class MainWindow(QMainWindow):
         for field in self.input_fields.values():
             if isinstance(field, QHBoxLayout):
                 field.itemAt(1).widget().setChecked(True) # встановлюємо значення "Ні" в статусі оплати
+                continue
+            if isinstance(field, QComboBox):
+                field.setCurrentIndex(-1)
                 continue
             field.clear()
     
