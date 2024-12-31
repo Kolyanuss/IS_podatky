@@ -29,7 +29,7 @@ class BaseRepository:
         INSERT INTO {self.table_name} ({', '.join(self.columns[1:])})
         VALUES ({', '.join(['?' for _ in values])})
         """
-        self.db.execute_non_query(query, values)
+        return self.db.execute_non_query(query, values)
 
     def update_record(self, record_id, values):
         """Оновлення існуючого запису в таблиці."""

@@ -63,9 +63,11 @@ class Database:
             raise e
     
     def execute_non_query(self, query: str, params: tuple = None):
+        '''Повертає ID елемента'''
         try:
             with self.connection:
-                self.connection.execute(query, params or ())
+                cursor = self.connection.execute(query, params or ())
+                return cursor.lastrowid
         except sqlite3.Error as e:
             print(f"Помилка запиту зміни даних: {e}")
             raise e

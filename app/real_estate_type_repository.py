@@ -89,7 +89,7 @@ class RealEstateRatesRepository(BaseRepository):
         self.table_name = "real_estate_type_rates"
         self.columns = self.get_table_columns()
         
-    def get_by_year_and_typeid(self, year:int, type_id:int):
+    def get_by_year_and_typeid(self, year, type_id):
         query = f"SELECT * FROM {self.table_name} WHERE tax_year = ? AND real_estate_type_id = ?"
         result = self.db.execute_query(query, (year, type_id))
         return result[0] if result else None
