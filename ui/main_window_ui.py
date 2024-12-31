@@ -15,7 +15,7 @@ from ui.change_estate_type_ui import EstateTypeDialog
 
 from app.salary_repository import SalaryRepository
 from app.real_estate_repository import RealEstateRepository
-from app.real_estate_type_repository import RealEstateTypeRepository
+from app.real_estate_type_repository import RealEstateTypeRepository, RealEstateTypeBaseRepository
 from app.user_repository import UserRepository
 
 class MainWindow(QMainWindow):
@@ -26,6 +26,7 @@ class MainWindow(QMainWindow):
         self.salary_repo = SalaryRepository(db)
         self.estate_repo = RealEstateRepository(db)
         self.type_repo = RealEstateTypeRepository(db)
+        self.type_base_repo = RealEstateTypeBaseRepository(db)
         self.user_repo = UserRepository(db)
         self.input_fields = {}
         self.fields_config = [
@@ -129,10 +130,7 @@ class MainWindow(QMainWindow):
 
         # estate types
         self.change_type_button = QPushButton("Типи нерухомості\nвідмінні від земельних ділянок")
-        self.change_type_button.setStyleSheet(get_button_style("neutral") + """
-                QPushButton {
-                min-height: 60px;
-            }""")
+        self.check_type_button()
         self.change_type_button.clicked.connect(self.open_change_type_dialog)
 
         # person management
@@ -231,7 +229,7 @@ class MainWindow(QMainWindow):
         self.person_dialog.show()
         
     def open_min_salary_dialog(self):
-        self.salary_window = MinSalaryDialog(self.db, int(self.year_combo_box.currentText()))
+        self.salary_window = MinSalaryDialog(self.db, self.get_current_year())
         self.salary_window.close_signal.connect(self.combo_check)
         self.salary_window.exec()
     
@@ -241,7 +239,7 @@ class MainWindow(QMainWindow):
         self.check_type_button()
     
     def check_min_salary(self):
-        if salary := self.salary_repo.get_record_by_id(int(self.year_combo_box.currentText())):
+        if salary := self.salary_repo.get_record_by_id(self.get_current_year()):
             self.min_salary_button.setText(f"Мінімальна зарплата:\n{salary[1]} грн")
             self.min_salary_button.setStyleSheet(get_button_style("success") + """
                 QPushButton {
@@ -255,16 +253,29 @@ class MainWindow(QMainWindow):
             }""")
     
     def open_change_type_dialog(self):
-        self.estate_type_window = EstateTypeDialog(self.db, int(self.year_combo_box.currentText()))
+        self.estate_type_window = EstateTypeDialog(self.db, self.get_current_year())
         self.estate_type_window.close_signal.connect(self.combo_check)
         self.estate_type_window.exec()
     
     def check_type_button(self):
-        pass
+        try:
+            records = self.type_base_repo.get_type_rates(self.get_current_year())
+            if all(element is not None for sublist in records for element in sublist):
+                self.change_type_button.setStyleSheet(get_button_style("success") + """
+                    QPushButton {
+                    min-height: 60px;
+                }""")
+            else:
+                self.change_type_button.setStyleSheet(get_button_style("warning") + """
+                    QPushButton {
+                    min-height: 60px;
+                }""")
+        except Exception as e:
+            QMessageBox.critical(self, "Помилка", f"Не вдалося оновити інформацію: {e}")
     
     def load_data(self):
         """Завантаження інформації з бази даних в таблицю"""
-        records = self.estate_repo.get_all_record_by_year(int(self.year_combo_box.currentText()))
+        records = self.estate_repo.get_all_record_by_year(self.get_current_year())
         self.table.setRowCount(len(records))
         for row_idx, row in enumerate(records):
             for col_idx, item in enumerate(row):
@@ -286,7 +297,8 @@ class MainWindow(QMainWindow):
                 # calculate tax ?
                 pass
                 
-            
+    def get_current_year(self):
+        return int(self.year_combo_box.currentText())
     
     def on_cell_click(self, row, column):
         """Заповнення полів введення даними вибраного рядка."""        
@@ -328,7 +340,7 @@ class MainWindow(QMainWindow):
         data = [field.text() for field in self.get_input_data().values()]
 
         if all(data[:1]):
-            year = int(self.year_combo_box.currentText())
+            year = self.get_current_year()
             try:
                 self.estate_repo.add_record(year, *data)
                 QMessageBox.information(self, "Успіх", "Інформацію про земельну ділянку успішно додано!")
