@@ -57,7 +57,6 @@ class RealEstateRepository(BaseRepository):
         tax_rate = tax_percent / 100
         tax = salary * tax_rate * area_taxable
         return tax
-        
     
     def add_record(self, year, estate_name, address, 
         area, paid, owner_id, estate_type_name, notes):

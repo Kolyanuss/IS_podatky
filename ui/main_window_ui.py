@@ -349,9 +349,9 @@ class MainWindow(QMainWindow):
             year = self.get_current_year()
             try:
                 self.estate_repo.add_record(year, *data)
-                QMessageBox.information(self, "Успіх", "Інформацію про земельну ділянку успішно додано!")
+                QMessageBox.information(self, "Успіх", "Інформацію про нерухомість успішно додано!")
             except Exception as e:
-                QMessageBox.critical(self, "Помилка", f"Не вдалося додати інформацію про земельну ділянку: {e}")
+                QMessageBox.critical(self, "Помилка", f"Не вдалося додати інформацію про нерухомість: {e}")
             self.clear_inputs()
             self.load_data()
         else:
