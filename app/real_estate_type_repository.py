@@ -1,4 +1,5 @@
 from app.base_repository import BaseRepository
+from app.real_estate_repository import RealEstateRepository
 
 class DeleteExeption(Exception):
     pass
@@ -6,6 +7,7 @@ class DeleteExeption(Exception):
 class RealEstateTypeBaseRepository(BaseRepository):
     def __init__(self, database):
         super().__init__(database)
+        self.db = database
         self.rates_repo = RealEstateRatesRepository(database)
         self.table_name_rates = self.rates_repo.table_name
         
@@ -64,10 +66,14 @@ class RealEstateTypeBaseRepository(BaseRepository):
             self.rates_repo.delete_record(id)
         
         records = self.rates_repo.get_record_by_type_id(type_id)
-        if not records: # якщо існують записи для цьго типу - видаляти  не можна
-            self.type_repo.delete_record(type_id)
-        else:
-            raise DeleteExeption("Не можливо видалити тип нерухомості, оскільки він використовується в інших записах! Спершу видаліть всю інформацію зв'язану з цим типом.")
+        if records: # якщо існують записи з інших років для цьго типу (ставки, ліміти площі) - видаляти  не можна
+            raise DeleteExeption("Не можливо видалити тип нерухомості, оскільки для нього існує ставки та ліміти площі за інші роки! Спершу видаліть всю інформацію зв'язану з цим типом.")
+        
+        records = RealEstateRepository(self.db).get_first_record_by_type_id(type_id)
+        if records: # якщо нерухомість прив'язана до цьго типу - видаляти  не можна
+            raise DeleteExeption("Не можливо видалити тип нерухомості, оскільки існують записи про нерухоме майно які вкористовують цей тип! Спершу видаліть обо оновіть всю інформацію зв'язану з цим типом.")
+        
+        self.type_repo.delete_record(type_id)
         
         
 class RealEstateTypeRepository(BaseRepository):
