@@ -57,7 +57,7 @@ class RealEstateRepository(BaseRepository):
         area_taxable = area_taxable if area_taxable > 0 else 0.0
         
         tax_rate = tax_percent / 100
-        tax = salary * tax_rate * area_taxable
+        tax = round(salary * tax_rate * area_taxable, 2)
         return tax
     
     def add_record(self, year, estate_name, address, 

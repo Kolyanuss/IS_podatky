@@ -90,12 +90,17 @@ class AddPersonDialog(QWidget):
 
         if all(data[:-2]):
             try:
+                int(data[3])
+            except:
+                QMessageBox.warning(self, "Помилка", "Код платника податків повинен бути числом!")
+                return
+            try:
                 self.user_repository.add_record(data)
                 QMessageBox.information(self, "Успіх", "Користувача успішно додано!")
-                self.clear_inputs()
-                self.load_users()
             except Exception as e:
                 QMessageBox.critical(self, "Помилка", f"Не вдалося додати користувача: {e}")
+            self.clear_inputs()
+            self.load_users()
         else:
             QMessageBox.warning(self, "Помилка", "Заповніть усі поля!")
 
@@ -111,12 +116,17 @@ class AddPersonDialog(QWidget):
 
         if all(data[:-2]):
             try:
+                int(data[3])
+            except:
+                QMessageBox.warning(self, "Помилка", "Код платника податків повинен бути числом!")
+                return
+            try:
                 self.user_repository.update_record(record_id, data)
                 QMessageBox.information(self, "Успіх", "Дані користувача оновлено!")
-                self.clear_inputs()
-                self.load_users()
             except Exception as e:
                 QMessageBox.critical(self, "Помилка", f"Не вдалося оновити користувача: {e}")
+            self.clear_inputs()
+            self.load_users()
         else:
             QMessageBox.warning(self, "Помилка", "Заповніть усі поля!")
 
@@ -134,9 +144,10 @@ class AddPersonDialog(QWidget):
             try:
                 self.user_repository.delete_record(record_id)
                 QMessageBox.information(self, "Успіх", "Користувача видалено!")
-                self.load_users()
             except Exception as e:
                 QMessageBox.critical(self, "Помилка", f"Не вдалося видалити користувача: {e}")
+            self.clear_inputs()
+            self.load_users()
         
 
     def on_cell_click(self, row, column):

@@ -53,7 +53,7 @@ class MinSalaryDialog(QDialog):
         value = self.input_field.text()
         if not value.isdigit():
             self.confirm_button.setStyleSheet(get_button_style("warning"))
-            QMessageBox().critical(self, "Помилка", "Введене значення не є числом! Спробуйте ще раз.")
+            QMessageBox().warning(self, "Помилка", "Введене значення не є числом! Спробуйте ще раз.")
             return
         
         self.salary_repository.add_update_record(self.year, value)

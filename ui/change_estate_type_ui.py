@@ -101,6 +101,12 @@ class EstateTypeDialog(QDialog):
 
         if all(data):
             try:
+                float(data[1])
+                float(data[2])
+            except:
+                QMessageBox.warning(self, "Помилка", "Ставка та ліміт площі повинні бути числами!")
+                return
+            try:
                 self.estate_type_repo.add_record(self.year, *data)
                 QMessageBox.information(self, "Успіх", "Тип нерухомості успішно додано!")
             except Exception as e:
@@ -121,6 +127,12 @@ class EstateTypeDialog(QDialog):
         data = [field.text() for field in self.input_fields.values()]
 
         if all(data):
+            try:
+                float(data[1])
+                float(data[2])
+            except:
+                QMessageBox.warning(self, "Помилка", "Ставка та ліміт площі повинні бути числами!")
+                return
             try:
                 self.estate_type_repo.update_record(record_id, self.year, *data)
                 QMessageBox.information(self, "Успіх", "Тип нерухомості успішно оновлено!")

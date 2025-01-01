@@ -307,8 +307,6 @@ class MainWindow(QMainWindow):
     
     def on_cell_click(self, row, column):
         """Заповнення полів вводу даними вибраного рядка."""
-        
-        
         value = self.table.item(row, 2).text()
         self.input_fields["name"].setText(value)
         
@@ -384,6 +382,11 @@ class MainWindow(QMainWindow):
         data = [field for field in self.get_input_data().values()]
 
         if all(data[:-1]):
+            try:
+                float(data[2])
+            except:
+                QMessageBox.warning(self, "Помилка", "Значення площі повинно бути числом!")
+                return
             year = self.get_current_year()
             try:
                 self.estate_repo.add_record(year, *data)
@@ -405,6 +408,11 @@ class MainWindow(QMainWindow):
         record_id = self.table.item(selected_row, 0).text()
         data = [field for field in self.get_input_data().values()]
         if all(data[:-1]):
+            try:
+                float(data[2])
+            except:
+                QMessageBox.warning(self, "Помилка", "Значення площі повинно бути числом!")
+                return
             year = self.get_current_year()
             try:
                 self.estate_repo.update_record(record_id, year, *data)
