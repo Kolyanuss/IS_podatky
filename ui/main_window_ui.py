@@ -46,7 +46,7 @@ class MainWindow(QMainWindow):
         self.load_data()
 
     def init_ui(self):
-        self.setWindowTitle("База оподаткування.")
+        self.setWindowTitle("База оподаткування")
         self.setGeometry(100, 100, 1400, 700)
 
         apply_styles(self, ["base", "input_field", "label"])
@@ -292,6 +292,7 @@ class MainWindow(QMainWindow):
     
     def load_data(self):
         """Завантаження інформації з бази даних в таблицю"""
+        self.table.clearSelection()
         records = self.estate_repo.get_all_record_by_year(self.get_current_year())
         self.table.setRowCount(len(records))
         for row_idx, row in enumerate(records):

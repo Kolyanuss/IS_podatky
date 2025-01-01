@@ -29,9 +29,8 @@ class EstateTypeDialog(QDialog):
 
     def init_ui(self):
         """Ініціалізація основного інтерфейсу"""
-        self.setWindowTitle("Типи нерухомості")
+        self.setWindowTitle("Типи нерухомості та ставки (за попередній рік)")
         self.setStyleSheet("background-color: #f0f4f8;")
-        # self.setGeometry(100, 100, 1200, 700)
         self.setFixedSize(600,400)
         
         apply_styles(self, ["base", "input_field", "label"])
@@ -71,6 +70,7 @@ class EstateTypeDialog(QDialog):
 
     def load_data(self):
         """Завантаження інформації з бази даних"""
+        self.table.clearSelection()
         try:
             records = self.estate_type_repo.get_type_rates(self.year)
             self.table.setRowCount(len(records))
@@ -93,6 +93,7 @@ class EstateTypeDialog(QDialog):
     
     def clear_inputs(self):
         """Очищення всіх полів введення."""
+        self.table.clearSelection()
         for field in self.input_fields.values():
             field.clear()
             

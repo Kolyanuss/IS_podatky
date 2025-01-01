@@ -78,6 +78,7 @@ class AddPersonDialog(QWidget):
 
     def load_users(self):
         """Завантаження користувачів у таблицю."""
+        self.table.clearSelection()
         users = self.user_repository.get_all_record()
         self.table.setRowCount(len(users))
         for row_idx, user in enumerate(users):
@@ -159,5 +160,6 @@ class AddPersonDialog(QWidget):
 
     def clear_inputs(self):
         """Очищення всіх полів введення."""
+        self.table.clearSelection()
         for field in self.input_fields.values():
             field.clear()
