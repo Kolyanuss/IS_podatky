@@ -390,7 +390,7 @@ class MainWindow(QMainWindow):
             year = self.get_current_year()
             try:
                 self.estate_repo.add_record(year, *data)
-                QMessageBox.information(self, "Успіх", "Інформацію про нерухомість успішно додано!")
+                # QMessageBox.information(self, "Успіх", "Інформацію про нерухомість успішно додано!")
             except Exception as e:
                 QMessageBox.critical(self, "Помилка", f"Щось пішло не так: {e}")
             self.clear_inputs()
@@ -416,7 +416,7 @@ class MainWindow(QMainWindow):
             year = self.get_current_year()
             try:
                 self.estate_repo.update_record(record_id, year, *data)
-                QMessageBox.information(self, "Успіх", "Інформацію про нерухомість успішно оновлено!")
+                # QMessageBox.information(self, "Успіх", "Інформацію про нерухомість успішно оновлено!")
             except Exception as e:
                 QMessageBox.critical(self, "Помилка", f"Щось пішло не так: {e}")
             self.clear_inputs()

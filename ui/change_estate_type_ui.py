@@ -108,7 +108,7 @@ class EstateTypeDialog(QDialog):
                 return
             try:
                 self.estate_type_repo.add_record(self.year, *data)
-                QMessageBox.information(self, "Успіх", "Тип нерухомості успішно додано!")
+                # QMessageBox.information(self, "Успіх", "Тип нерухомості успішно додано!")
             except Exception as e:
                 QMessageBox.critical(self, "Помилка", f"Не вдалося додати тип нерухомості: {e}")
             self.clear_inputs()
@@ -135,7 +135,7 @@ class EstateTypeDialog(QDialog):
                 return
             try:
                 self.estate_type_repo.update_record(record_id, self.year, *data)
-                QMessageBox.information(self, "Успіх", "Тип нерухомості успішно оновлено!")
+                # QMessageBox.information(self, "Успіх", "Тип нерухомості успішно оновлено!")
             except Exception as e:
                 QMessageBox.critical(self, "Помилка", f"Не вдалося оновити тип нерухомості: {e}")
             self.clear_inputs()
@@ -158,7 +158,7 @@ class EstateTypeDialog(QDialog):
                 self.estate_type_repo.delete_record(record_id, type_name)
                 QMessageBox.information(self, "Успіх", "Тип нерухомості видалено!")
             except DeleteExeption as e:
-                QMessageBox.information(self, "Увага", f"Інформацію видалено частково: {e}")
+                QMessageBox.warning(self, "Увага", f"Інформацію видалено частково: {e}")
             except Exception as e:
                 QMessageBox.critical(self, "Помилка", f"Не вдалося видалити запис: {e}")
             

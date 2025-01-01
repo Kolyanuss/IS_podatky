@@ -96,7 +96,7 @@ class AddPersonDialog(QWidget):
                 return
             try:
                 self.user_repository.add_record(data)
-                QMessageBox.information(self, "Успіх", "Користувача успішно додано!")
+                # QMessageBox.information(self, "Успіх", "Користувача успішно додано!")
             except Exception as e:
                 QMessageBox.critical(self, "Помилка", f"Не вдалося додати користувача: {e}")
             self.clear_inputs()
@@ -122,7 +122,7 @@ class AddPersonDialog(QWidget):
                 return
             try:
                 self.user_repository.update_record(record_id, data)
-                QMessageBox.information(self, "Успіх", "Дані користувача оновлено!")
+                # QMessageBox.information(self, "Успіх", "Дані користувача оновлено!")
             except Exception as e:
                 QMessageBox.critical(self, "Помилка", f"Не вдалося оновити користувача: {e}")
             self.clear_inputs()
