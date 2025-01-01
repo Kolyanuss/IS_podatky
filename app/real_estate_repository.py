@@ -1,17 +1,16 @@
 from app.base_repository import BaseRepository
-from app.real_estate_type_repository import RealEstateTypeRepository
 from app.salary_repository import SalaryRepository
-from app.real_estate_type_repository import RealEstateRatesRepository
+import app.real_estate_type_repository as estate_type_base_repo
 
 class RealEstateRepository(BaseRepository):
     def __init__(self, database):
         super().__init__(database)
+        self.db = database
         self.table_name = "real_estate"
         self.columns = self.get_table_columns()
-        self.type_repo = RealEstateTypeRepository(database)
+        self.type_repo = estate_type_base_repo.RealEstateTypeRepository(database)
         self.estate_tax_repo = RealEstateTaxesRepository(database)
-        self.salary_repo = SalaryRepository(database)
-        self.estate_type_rates_repo = RealEstateRatesRepository(database)
+        self.real_estate_rates_repo = estate_type_base_repo.RealEstateRatesRepository(database)
         
     def get_all_record_by_year(self, year):
         query = """
@@ -41,13 +40,23 @@ class RealEstateRepository(BaseRepository):
         """
         return self.db.execute_query(query, (year,year))
     
+    def get_first_record_by_type_id(self, type_id):
+        query = f"""
+        SELECT id FROM {self.table_name}
+        WHERE {self.columns[-1]} = ?
+        LIMIT 1
+        """
+        result = self.db.execute_query(query, (type_id,))
+        return result[0] if result else None
+        
+    
     def calculate_tax(self, year, area:float, type_id):
-        salary = self.salary_repo.get_record_by_id(year)
+        salary = SalaryRepository(self.db).get_record_by_id(year)
         if not salary:
             raise Exception("Неможливо розрахувати податок - немає інформації про зарпалату!")
         salary = int(salary[1])
         
-        record = self.estate_type_rates_repo.get_by_year_and_typeid(year, type_id)
+        record = self.real_estate_rates_repo.get_by_year_and_typeid(year, type_id)
         if record is None:
             raise Exception("Неможливо розрахувати податок - немає інформації про ставку податку!")
         area_limit = float(record[3])
