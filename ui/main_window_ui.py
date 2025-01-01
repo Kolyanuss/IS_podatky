@@ -229,18 +229,36 @@ class MainWindow(QMainWindow):
     def open_add_person_dialog(self):
         """Відкриття діалогу додавання користувача."""
         self.person_dialog = AddPersonDialog(self.db)
+        # self.person_dialog.edited_signal.connect(self.users_edited_ivent)
         self.person_dialog.show()
         
     def open_min_salary_dialog(self):
         self.salary_window = MinSalaryDialog(self.db, self.get_current_year())
         self.salary_window.close_signal.connect(self.combo_check)
+        self.salary_window.edited_signal.connect(self.edited_global_var_ivent)
         self.salary_window.exec()
+    
+    def open_change_type_dialog(self):
+        self.estate_type_window = EstateTypeDialog(self.db, self.get_current_year())
+        self.estate_type_window.close_signal.connect(self.combo_check)
+        self.estate_type_window.edited_signal.connect(self.edited_global_var_ivent)
+        self.estate_type_window.exec()
+    
+    def edited_global_var_ivent(self):
+        try:
+            self.estate_repo.update_all_tax(self.get_current_year())
+        except Exception as e:
+            QMessageBox.critical(self, "Помилка", f"Не вдалося розрахувати нові податки: {e}")
+        self.load_data()
+    
+    def users_edited_ivent(self):
+        pass
     
     def combo_check(self):
         self.clear_inputs()
         self.check_min_salary()
-        self.load_data()
         self.check_type_button()
+        self.load_data()
     
     def check_min_salary(self):
         if salary := self.salary_repo.get_record_by_id(self.get_current_year()):
@@ -255,11 +273,6 @@ class MainWindow(QMainWindow):
                 QPushButton {
                 min-height: 60px;
             }""")
-    
-    def open_change_type_dialog(self):
-        self.estate_type_window = EstateTypeDialog(self.db, self.get_current_year())
-        self.estate_type_window.close_signal.connect(self.combo_check)
-        self.estate_type_window.exec()
     
     def check_type_button(self):
         try:
@@ -285,21 +298,18 @@ class MainWindow(QMainWindow):
             for col_idx, item in enumerate(row):
                 self.table.setItem(row_idx, col_idx, QTableWidgetItem(str(item)))
             
-            if self.table.item(row_idx, 5).text() == "":
-                continue
-            area = float(self.table.item(row_idx, 4).text())
-            tax_area_limit = float(self.table.item(row_idx, 5).text())
-            
-            area_taxable = area - tax_area_limit
-            area_taxable = area_taxable if area_taxable > 0 else 0
-            self.table.setItem(row_idx, 5, QTableWidgetItem(str(area_taxable))) # col=5 це оподаткована площа
-            
-            if area_taxable == 0:
-                self.table.setItem(row_idx, 6, QTableWidgetItem(str(0))) # col=6 це сума податку
+            if self.table.item(row_idx, 5).text() != "": # якщо площа ліміту не пуста - рахуємо оподатковану площу
+                area = float(self.table.item(row_idx, 4).text())
+                tax_area_limit = float(self.table.item(row_idx, 5).text())
                 
-            if self.table.item(row_idx, 7).text() == "1": # paid
+                area_taxable = area - tax_area_limit
+                area_taxable = area_taxable if area_taxable > 0 else 0
+                self.table.item(row_idx, 5).setText(str(area_taxable)) # col=5 - оподаткована площа
+            
+            paid = self.table.item(row_idx, 7).text()
+            if paid == "1": # конвертування з 1\0 в Так\Ні
                 self.table.item(row_idx, 7).setText("Так")
-            else:
+            elif paid == "0":
                 self.table.item(row_idx, 7).setText("Ні")
                 
     def get_current_year(self):

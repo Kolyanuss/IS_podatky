@@ -12,6 +12,7 @@ from app.database import Database
 
 class EstateTypeDialog(QDialog):
     close_signal = pyqtSignal()
+    edited_signal = pyqtSignal()
     def __init__(self, database:Database, year:int):
         super().__init__()
         self.estate_type_repo = RealEstateTypeBaseRepository(database)
@@ -135,6 +136,7 @@ class EstateTypeDialog(QDialog):
                 return
             try:
                 self.estate_type_repo.update_record(record_id, self.year, *data)
+                self.edited_signal.emit()
                 # QMessageBox.information(self, "Успіх", "Тип нерухомості успішно оновлено!")
             except Exception as e:
                 QMessageBox.critical(self, "Помилка", f"Не вдалося оновити тип нерухомості: {e}")

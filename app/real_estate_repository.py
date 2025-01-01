@@ -11,7 +11,11 @@ class RealEstateRepository(BaseRepository):
         self.type_repo = estate_type_base_repo.RealEstateTypeRepository(database)
         self.estate_tax_repo = RealEstateTaxesRepository(database)
         self.real_estate_rates_repo = estate_type_base_repo.RealEstateRatesRepository(database)
-        
+    
+    def get_all_ids(self):
+        query = f"SELECT {self.columns[0]} FROM {self.table_name}"
+        return self.db.execute_query(query)
+    
     def get_all_record_by_year(self, year):
         query = """
         SELECT 
@@ -49,6 +53,14 @@ class RealEstateRepository(BaseRepository):
         result = self.db.execute_query(query, (type_id,))
         return result[0] if result else None
         
+    def get_area_and_typeid_by_id(self, estate_id):
+        query = f"""
+        SELECT area, real_estate_type_id
+        FROM {self.table_name}
+        WHERE {self.columns[0]} = ?
+        LIMIT 1"""
+        result = self.db.execute_query(query, (estate_id,))
+        return result[0] if result else None
     
     def calculate_tax(self, year, area:float, type_id):
         salary = SalaryRepository(self.db).get_record_by_id(year)
@@ -56,11 +68,11 @@ class RealEstateRepository(BaseRepository):
             raise Exception("Неможливо розрахувати податок - немає інформації про зарпалату!")
         salary = int(salary[1])
         
-        record = self.real_estate_rates_repo.get_by_year_and_typeid(year, type_id)
-        if record is None:
+        type_rate = self.real_estate_rates_repo.get_by_year_and_typeid(year, type_id)
+        if type_rate is None:
             raise Exception("Неможливо розрахувати податок - немає інформації про ставку податку!")
-        area_limit = float(record[3])
-        tax_percent = float(record[4]) # %
+        area_limit = float(type_rate[3])
+        tax_percent = float(type_rate[4]) # %
         
         area_taxable = float(area) - area_limit
         area_taxable = area_taxable if area_taxable > 0 else 0.0
@@ -82,21 +94,42 @@ class RealEstateRepository(BaseRepository):
         paid = 1 if paid == "Так" or tax == 0 else 0
         self.estate_tax_repo.add_record((new_estate_id, year, tax, paid))
         
-    def update_record(self, estate_record_id, year, estate_name, address, 
+    def update_record(self, estate_id, year, estate_name, address, 
         area, paid, owner_id, estate_type_name, notes):
         area = float(area)
         type_record = self.type_repo.get_by_name(estate_type_name)
         if type_record is None:
             raise Exception("Помилка. Не знайдено такий тип нерухомості!")
         type_id = type_record[0]
-        super().update_record(estate_record_id, (estate_name, address, area, notes, owner_id, type_id))
+        super().update_record(estate_id, (estate_name, address, area, notes, owner_id, type_id))
         
         tax = self.calculate_tax(year, area, type_id)
         paid = 1 if paid == "Так" or tax == 0 else 0
-        if self.estate_tax_repo.get_by_id_and_year(estate_record_id, year):
-            self.estate_tax_repo.update_record(estate_record_id, year, (tax, paid))
+        if self.estate_tax_repo.get_by_id_and_year(estate_id, year):
+            self.estate_tax_repo.update_record(estate_id, year, (tax, paid))
         else:
-            self.estate_tax_repo.add_record((estate_record_id, year, tax, paid))
+            self.estate_tax_repo.add_record((estate_id, year, tax, paid))
+    
+    def update_all_tax(self, year):
+        estate_results = self.get_all_ids()
+        if not estate_results:
+            return
+        for estate in estate_results:
+            self.update_tax(estate[0], year)
+    
+    def update_tax(self, estate_id, year):
+        estate_record = self.get_area_and_typeid_by_id(estate_id)
+        if not estate_record:
+            raise Exception("Помилка, такий запис не знайдено!")
+        area, type_id = estate_record
+        
+        new_tax = self.calculate_tax(year, area, type_id)
+        
+        if self.estate_tax_repo.get_by_id_and_year(estate_id, year):
+            self.estate_tax_repo.update_tax(estate_id, year, new_tax)
+        else:
+            paid=0
+            self.estate_tax_repo.add_record((estate_id, year, new_tax, paid))
 
 class RealEstateTaxesRepository(BaseRepository):
     def __init__(self, database):
@@ -127,4 +160,12 @@ class RealEstateTaxesRepository(BaseRepository):
         WHERE {self.columns[0]} = ? AND {self.columns[1]} = ?
         """
         self.db.execute_non_query(query, tuple(values) + (record_id, year))
+    
+    def update_tax(self, record_id, year, tax):
+        query = f"""
+        UPDATE {self.table_name} 
+        SET {self.columns[2]} = ?
+        WHERE {self.columns[0]} = ? AND {self.columns[1]} = ?
+        """
+        self.db.execute_non_query(query, (tax, record_id, year))
     

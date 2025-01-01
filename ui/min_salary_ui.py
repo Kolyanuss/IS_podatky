@@ -10,6 +10,7 @@ from app.database import Database
 
 class MinSalaryDialog(QDialog):
     close_signal = pyqtSignal()
+    edited_signal = pyqtSignal()
     def __init__(self, database:Database, year:int):
         super().__init__()
         self.salary_repository = SalaryRepository(database)
@@ -55,8 +56,14 @@ class MinSalaryDialog(QDialog):
             self.confirm_button.setStyleSheet(get_button_style("warning"))
             QMessageBox().warning(self, "Помилка", "Введене значення не є числом! Спробуйте ще раз.")
             return
+        try:
+            self.salary_repository.add_update_record(self.year, value)
+            self.edited_signal.emit()
+        except Exception as e:
+            self.confirm_button.setStyleSheet(get_button_style("danger"))
+            QMessageBox().warning(self, "Помилка", str(e))
+            return
         
-        self.salary_repository.add_update_record(self.year, value)
         self.close()
 
     def closeEvent(self, event):
