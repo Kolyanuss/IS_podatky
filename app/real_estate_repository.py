@@ -114,8 +114,18 @@ class RealEstateRepository(BaseRepository):
         estate_results = self.get_all_ids()
         if not estate_results:
             return
+        
+        unique_exeptions = set()
+        i=0
         for estate in estate_results:
-            self.update_tax(estate[0], year)
+            try:
+                self.update_tax(estate[0], year)
+            except Exception as e:
+                unique_exeptions.add(str(e))
+                i+=1
+        
+        if unique_exeptions:
+            raise Exception(f"для ({i}) рядків. Перелік унікальних помилок:\n" + "\n".join(unique_exeptions))
     
     def update_tax(self, estate_id, year):
         estate_record = self.get_area_and_typeid_by_id(estate_id)
