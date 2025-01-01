@@ -44,10 +44,12 @@ class RealEstateRepository(BaseRepository):
     def calculate_tax(self, year, area:float, type_id):
         salary = self.salary_repo.get_record_by_id(year)
         if not salary:
-            raise Exception("Немає інформації про зарпалату!")
+            raise Exception("Неможливо розрахувати податок - немає інформації про зарпалату!")
         salary = int(salary[1])
         
         record = self.estate_type_rates_repo.get_by_year_and_typeid(year, type_id)
+        if record is None:
+            raise Exception("Неможливо розрахувати податок - немає інформації про ставку податку!")
         area_limit = float(record[3])
         tax_percent = float(record[4]) # %
         
@@ -70,12 +72,36 @@ class RealEstateRepository(BaseRepository):
         tax = self.calculate_tax(year, area, type_id)
         paid = 1 if paid == "Так" or tax == 0 else 0
         self.estate_tax_repo.add_record((new_estate_id, year, tax, paid))
+        
+    def update_record(self, estate_record_id, year, estate_name, address, 
+        area, paid, owner_id, estate_type_name, notes):
+        area = float(area)
+        type_record = self.type_repo.get_by_name(estate_type_name)
+        if type_record is None:
+            raise Exception("Помилка. Не знайдено такий тип нерухомості!")
+        type_id = type_record[0]
+        super().update_record(estate_record_id, (estate_name, address, area, notes, owner_id, type_id))
+        
+        tax = self.calculate_tax(year, area, type_id)
+        paid = 1 if paid == "Так" or tax == 0 else 0
+        if self.estate_tax_repo.get_by_id_and_year(estate_record_id, year):
+            self.estate_tax_repo.update_record(estate_record_id, year, (tax, paid))
+        else:
+            self.estate_tax_repo.add_record((estate_record_id, year, tax, paid))
 
 class RealEstateTaxesRepository(BaseRepository):
     def __init__(self, database):
         super().__init__(database)
         self.table_name = "real_estate_taxes"
         self.columns = self.get_table_columns()
+        
+    def get_by_id_and_year(self, record_id, year):
+        query = f"""
+        SELECT * FROM {self.table_name}
+        WHERE {self.columns[0]} = ? AND {self.columns[1]} = ?
+        """
+        result = self.db.execute_query(query, (record_id, year))
+        return result[0] if result else None
     
     def add_record(self, values):
         """Додавання нового запису в таблицю."""
@@ -84,4 +110,12 @@ class RealEstateTaxesRepository(BaseRepository):
         VALUES ({', '.join(['?' for _ in values])})
         """
         return self.db.execute_non_query(query, values)
+    
+    def update_record(self, record_id, year, values):
+        query = f"""
+        UPDATE {self.table_name} 
+        SET {', '.join([f"{column} = ?" for column in self.columns[2:]])}
+        WHERE {self.columns[0]} = ? AND {self.columns[1]} = ?
+        """
+        self.db.execute_non_query(query, tuple(values) + (record_id, year))
     

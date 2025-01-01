@@ -383,13 +383,13 @@ class MainWindow(QMainWindow):
         """Додавання запису"""
         data = [field for field in self.get_input_data().values()]
 
-        if all(data[:1]):
+        if all(data[:-1]):
             year = self.get_current_year()
             try:
                 self.estate_repo.add_record(year, *data)
                 QMessageBox.information(self, "Успіх", "Інформацію про нерухомість успішно додано!")
             except Exception as e:
-                QMessageBox.critical(self, "Помилка", f"Не вдалося додати інформацію про нерухомість: {e}")
+                QMessageBox.critical(self, "Помилка", f"Щось пішло не так: {e}")
             self.clear_inputs()
             self.load_data()
         else:
@@ -399,8 +399,22 @@ class MainWindow(QMainWindow):
         """Оновлення запису"""
         selected_row = self.table.currentRow()
         if selected_row == -1:
-            QMessageBox.warning(self, "Помилка", "Виберіть запис для видалення!")
+            QMessageBox.warning(self, "Помилка", "Виберіть запис для оновлення!")
             return
+        
+        record_id = self.table.item(selected_row, 0).text()
+        data = [field for field in self.get_input_data().values()]
+        if all(data[:-1]):
+            year = self.get_current_year()
+            try:
+                self.estate_repo.update_record(record_id, year, *data)
+                QMessageBox.information(self, "Успіх", "Інформацію про нерухомість успішно оновлено!")
+            except Exception as e:
+                QMessageBox.critical(self, "Помилка", f"Щось пішло не так: {e}")
+            self.clear_inputs()
+            self.load_data()
+        else:
+            QMessageBox.warning(self, "Помилка", "Заповніть усі поля!")
 
     def delete_record(self):
         """Видалення запису"""
