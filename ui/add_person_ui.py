@@ -2,13 +2,14 @@ from PyQt6.QtWidgets import (
     QDialog, QVBoxLayout, QLineEdit, QPushButton, QMessageBox, QFrame, 
     QTableWidget, QTableWidgetItem, QHBoxLayout, QLabel, QHeaderView, QWidget
 )
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, pyqtSignal
 from ui.styles import apply_style, apply_styles
 from ui.utils import confirm_delete, create_table_widget, create_CUD_buttons
 from app.database import Database
 from app.user_repository import UserRepository
 
 class AddPersonDialog(QWidget):
+    edited_signal = pyqtSignal()
     def __init__(self, db: Database):
         super().__init__()
         self.user_repository = UserRepository(db)
@@ -97,6 +98,7 @@ class AddPersonDialog(QWidget):
                 return
             try:
                 self.user_repository.add_record(data)
+                self.edited_signal.emit()
                 # QMessageBox.information(self, "Успіх", "Користувача успішно додано!")
             except Exception as e:
                 QMessageBox.critical(self, "Помилка", f"Не вдалося додати користувача: {e}")
@@ -123,6 +125,7 @@ class AddPersonDialog(QWidget):
                 return
             try:
                 self.user_repository.update_record(record_id, data)
+                self.edited_signal.emit()
                 # QMessageBox.information(self, "Успіх", "Дані користувача оновлено!")
             except Exception as e:
                 QMessageBox.critical(self, "Помилка", f"Не вдалося оновити користувача: {e}")
@@ -130,7 +133,6 @@ class AddPersonDialog(QWidget):
             self.load_users()
         else:
             QMessageBox.warning(self, "Помилка", "Заповніть усі поля!")
-
 
     def delete_record(self):
         """Видалення вибраного запису."""
@@ -144,6 +146,7 @@ class AddPersonDialog(QWidget):
         if confirm_delete() == QMessageBox.StandardButton.Yes:
             try:
                 self.user_repository.delete_record(record_id)
+                self.edited_signal.emit()
                 QMessageBox.information(self, "Успіх", "Користувача видалено!")
             except Exception as e:
                 QMessageBox.critical(self, "Помилка", f"Не вдалося видалити користувача: {e}")

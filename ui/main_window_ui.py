@@ -229,7 +229,7 @@ class MainWindow(QMainWindow):
     def open_add_person_dialog(self):
         """Відкриття діалогу додавання користувача."""
         self.person_dialog = AddPersonDialog(self.db)
-        # self.person_dialog.edited_signal.connect(self.users_edited_ivent)
+        self.person_dialog.edited_signal.connect(self.users_edited_ivent)
         self.person_dialog.show()
         
     def open_min_salary_dialog(self):
@@ -252,7 +252,18 @@ class MainWindow(QMainWindow):
         self.load_data()
     
     def users_edited_ivent(self):
-        pass
+        person_dropdown:QComboBox = self.input_fields["owner"]
+        person_dropdown.clear()
+        self.person_data_list = self.user_repo.get_id_and_full_name()
+        for person in self.person_data_list:
+            person_dropdown.addItem(person[1], person[0])
+
+        # функціонал пошуку
+        person_names = [person[1] for person in self.person_data_list]
+        completer = QCompleter(person_names, person_dropdown)
+        completer.setFilterMode(Qt.MatchFlag.MatchContains)
+        completer.setCompletionMode(QCompleter.CompletionMode.PopupCompletion)
+        person_dropdown.setCompleter(completer)
     
     def combo_check(self):
         self.clear_inputs()
