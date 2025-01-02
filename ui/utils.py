@@ -39,12 +39,31 @@ def confirm_delete():
 
 def create_table_widget(col_num, columns, conect_func):
     """Створення таблиці"""
-    table = QTableWidget()
+    class ResizableTable(QTableWidget):
+        def resizeEvent(self, event):
+            super().resizeEvent(event)  # Викликаємо оригінальний метод обробки події
+            self.resize_columns()  # Викликаємо нашу функцію для розтягування колонок
+
+        def resize_columns(self):
+            # self.resizeColumnsToContents()
+            total_width = self.viewport().width()  # Отримуємо доступну ширину таблиці
+            current_widths = [self.columnWidth(i) for i in range(self.columnCount())]  # Поточні ширини колонок
+            total_current_width = sum(current_widths)  # Загальна ширина всіх колонок
+            if total_current_width > 0:
+                scale_factor = total_width / total_current_width  # Фактор масштабування
+                for i in range(self.columnCount()):
+                    self.setColumnWidth(i, int(current_widths[i] * scale_factor))
+
+    
+    table = ResizableTable()
     table.setColumnCount(col_num)
     table.setHorizontalHeaderLabels(columns)
     table.setColumnHidden(0, True)
     table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
-    table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+    
+    table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
+    table.resizeColumnsToContents()
+    
     table.setAlternatingRowColors(True)
     table.setFocusPolicy(Qt.FocusPolicy.NoFocus)
     table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
