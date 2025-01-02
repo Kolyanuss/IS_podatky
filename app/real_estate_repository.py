@@ -23,10 +23,17 @@ class RealEstateRepository(BaseRepository):
             users.id AS user_id,
             real_estate.name, 
             real_estate.address, 
-            real_estate.area, 
-            COALESCE(real_estate_type_rates.tax_area_limit,''),
+            real_estate.area,
+            CASE 
+                WHEN real_estate_type_rates.tax_area_limit IS NULL THEN ''
+                ELSE CAST(MAX(0, real_estate.area - real_estate_type_rates.tax_area_limit) AS TEXT)
+            END AS taxable_area,
             COALESCE(real_estate_taxes.tax,''),
-            COALESCE(real_estate_taxes.paid,''),
+            CASE 
+                WHEN real_estate_taxes.paid = 1 THEN 'Так'
+                WHEN real_estate_taxes.paid = 0 THEN 'НІ'
+                ELSE ''
+            END AS paid,
             users.last_name || ' ' || users.name || ' ' || users.middle_name AS fullname,
             real_estate_type.name || ' (' || COALESCE(real_estate_type_rates.tax_rate,' _') || '%)' AS type_name,
             COALESCE(real_estate.notes,'')
