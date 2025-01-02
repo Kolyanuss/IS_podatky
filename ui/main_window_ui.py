@@ -12,6 +12,7 @@ from ui.utils import create_CUD_buttons, create_table_widget, create_Vbox, confi
 from ui.year_box import YearComboBox
 from ui.min_salary_ui import MinSalaryDialog
 from ui.change_estate_type_ui import EstateTypeDialog
+from ui.filterable_table_view import FilterableTableWidget
 
 from app.salary_repository import SalaryRepository
 from app.real_estate_repository import RealEstateRepository
@@ -34,7 +35,7 @@ class MainWindow(QMainWindow):
             ("address", "Адреса нерухомості", "Введіть адресу*"),
             ("area", "Площа м^2", "Введіть площу*"),
             ("area_tax", "Площа податку", ""),
-            ("tax", "Сума податку (грн)", ""),
+            ("tax", "Податок (грн)", ""),
             ("paid", "Сплачено?", ""),
             ("owner", "Власник нерухомості", "Виберіть власника*"),
             ("type", "Тип нерухомості", "Виберіть тип нерухомості*"),
@@ -58,8 +59,10 @@ class MainWindow(QMainWindow):
         # Layouts
         main_layout = QVBoxLayout()
         top_button_layout = self.create_top_button_layout()
-        self.table = create_table_widget(len(self.table_column), self.table_column, self.on_cell_click)
-        self.table.setColumnHidden(1, True)
+        
+        # self.table = create_table_widget(len(self.table_column), self.table_column, self.on_cell_click)
+        self.table = FilterableTableWidget(self.table_column, self.on_cell_click)
+        # self.table.setColumnHidden(1, True)
         edit_layout = self.create_edit_layouts()
         action_button_layout = create_CUD_buttons(self.add_record, self.update_record, self.delete_record)
 
@@ -304,64 +307,43 @@ class MainWindow(QMainWindow):
     def load_data(self):
         """Завантаження інформації з бази даних в таблицю"""
         self.table.clearSelection()
+        self.table.clear_rows()
         records = self.estate_repo.get_all_record_by_year(self.get_current_year())
-        self.table.setRowCount(len(records))
-        for row_idx, row in enumerate(records):
-            for col_idx, item in enumerate(row):
-                self.table.setItem(row_idx, col_idx, QTableWidgetItem(str(item)))
-            
-            if self.table.item(row_idx, 5).text() != "": # якщо площа ліміту не пуста - рахуємо оподатковану площу
-                area = float(self.table.item(row_idx, 4).text())
-                tax_area_limit = float(self.table.item(row_idx, 5).text())
-                
-                area_taxable = area - tax_area_limit
-                area_taxable = area_taxable if area_taxable > 0 else 0
-                self.table.item(row_idx, 5).setText(str(area_taxable)) # col=5 - оподаткована площа
-            
-            paid = self.table.item(row_idx, 7).text()
-            if paid == "1": # конвертування з 1\0 в Так\Ні
-                self.table.item(row_idx, 7).setText("Так")
-            elif paid == "0":
-                self.table.item(row_idx, 7).setText("Ні")
+        
+        [self.table.add_row(row) for row in records]
                 
     def get_current_year(self):
         return int(self.year_combo_box.currentText())
     
-    def on_cell_click(self, row, column):
+    def on_cell_click(self, model_index):
         """Заповнення полів вводу даними вибраного рядка."""
-        value = self.table.item(row, 2).text()
-        self.input_fields["name"].setText(value)
+        row = model_index.row()
+        row_data = self.table.get_row_values_by_index(row)
         
-        value = self.table.item(row, 3).text()
-        self.input_fields["address"].setText(value)
-        
-        value = self.table.item(row, 4).text()
-        self.input_fields["area"].setText(value)
+        self.input_fields["name"].setText(row_data[2])
+        self.input_fields["address"].setText(row_data[3])
+        self.input_fields["area"].setText(row_data[4])
         
         # для QRadioButton (paid)
-        value = self.table.item(row, 7).text()
         for j in range(self.input_fields["paid"].count()):
             widget = self.input_fields["paid"].itemAt(j).widget()
-            if isinstance(widget, QRadioButton) and widget.text() == value:
+            if isinstance(widget, QRadioButton) and widget.text() == row_data[7]:
                 widget.setChecked(True)
                 break
 
         # QComboBox ownner
-        value = self.table.item(row, 8).text()
-        index = self.input_fields["owner"].findText(value)
+        index = self.input_fields["owner"].findText(row_data[8])
         if index != -1:
             self.input_fields["owner"].setCurrentIndex(index)
 
         # QComboBox type
-        value = self.table.item(row, 9).text().split(" (")[0]
-        index = self.input_fields["type"].findText(value)
+        type_name = row_data[9].split(" (")[0]
+        index = self.input_fields["type"].findText(type_name)
         if index != -1:
             self.input_fields["type"].setCurrentIndex(index)
         
-        value = self.table.item(row, 10).text()
-        self.input_fields["notes"].setText(value)
+        self.input_fields["notes"].setText(row_data[10])
 
-    
     def clear_inputs(self):
         """Очищення всіх полів введення."""
         for field in self.input_fields.values():
@@ -422,12 +404,12 @@ class MainWindow(QMainWindow):
 
     def update_record(self):
         """Оновлення запису"""
-        selected_row = self.table.currentRow()
+        selected_row = self.table.get_current_row_index()
         if selected_row == -1:
             QMessageBox.warning(self, "Помилка", "Виберіть запис для оновлення!")
             return
         
-        record_id = self.table.item(selected_row, 0).text()
+        record_id = self.table.get_row_values_by_index(selected_row)[0]
         data = [field for field in self.get_input_data().values()]
         if all(data[:-1]):
             try:
@@ -448,12 +430,12 @@ class MainWindow(QMainWindow):
 
     def delete_record(self):
         """Видалення запису"""
-        selected_row = self.table.currentRow()
+        selected_row = self.table.get_current_row_index()
         if selected_row == -1:
             QMessageBox.warning(self, "Помилка", "Виберіть запис для видалення!")
             return
             
-        record_id = self.table.item(selected_row, 0).text()
+        record_id = self.table.get_row_values_by_index(selected_row)[0]
         
         if confirm_delete() == QMessageBox.StandardButton.Yes:
             try:

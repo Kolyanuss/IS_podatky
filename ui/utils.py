@@ -68,7 +68,7 @@ def create_table_widget(col_num, columns, conect_func):
     table.setFocusPolicy(Qt.FocusPolicy.NoFocus)
     table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
     table.cellClicked.connect(conect_func)
-    apply_styles(table, ["table"])
+    apply_styles(table, ["base"])
     return table
 
 def create_Vbox(lable_name:str, input_field, placeholder:str=None):

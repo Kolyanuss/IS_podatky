@@ -32,6 +32,37 @@ def get_global_styles():
             }
         """,
         
+        "table_view": """
+            QWidget {
+                font-family: 'Segoe UI', sans-serif;
+            }
+            QTableView {
+                background-color: white;
+                alternate-background-color: #f0efed;
+                gridline-color: #dcdde1;
+                border: 1px solid #dcdde1;
+                border-radius: 5px;
+                selection-background-color: #92c9ff;
+                selection-color: black;
+                font-size: 14px;
+            }
+            QTableView::item {
+                padding: 5px;
+                border: none;
+            }
+            QHeaderView::section {
+                background-color: #f5f6fa;
+                padding: 5px;
+                font-weight: bold;
+                font-size: 13px;
+            }            
+            QHeaderView::section:vertical {
+                border: none;
+                border-bottom: 1px solid #dcdde1;
+                border-right: 1px solid #dcdde1;
+            }
+        """,
+        
         "input_field": """
             QLineEdit {
                 padding: 5px;

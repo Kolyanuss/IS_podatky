@@ -31,7 +31,7 @@ class RealEstateRepository(BaseRepository):
             COALESCE(real_estate_taxes.tax,''),
             CASE 
                 WHEN real_estate_taxes.paid = 1 THEN 'Так'
-                WHEN real_estate_taxes.paid = 0 THEN 'НІ'
+                WHEN real_estate_taxes.paid = 0 THEN 'Ні'
                 ELSE ''
             END AS paid,
             users.last_name || ' ' || users.name || ' ' || users.middle_name AS fullname,
