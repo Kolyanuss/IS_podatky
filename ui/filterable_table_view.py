@@ -25,16 +25,18 @@ class FilterableTableWidget(QWidget):
                 for i in range(self.model().columnCount()):
                     self.setColumnWidth(i, int(current_widths[i] * scale_factor))
 
-    def __init__(self, column_names, cell_click_callback):
+    def __init__(self, column_names, cell_click_callback, filter_columns_from_start=None):
         """
         Створює віджет таблиці з фільтрацією за колонками.
         
         :param column_names: Список назв колонок
         :param cell_click_callback: Функція для обробки кліку по клітинці
+        :param filter_columns_from_start: Список індексів колонок, які використовують фільтрацію "від початку"
         """
         super().__init__()
 
         self.column_names = column_names
+        self.filter_columns_from_start = filter_columns_from_start or []
 
         # Модель даних
         self.model = QStandardItemModel()
@@ -53,9 +55,6 @@ class FilterableTableWidget(QWidget):
         self.table.setColumnHidden(1, True)
         self.table.resizeColumnsToContents()
         self.table.horizontalHeader().setMinimumSectionSize(60)
-        for i in [4,5,6,7]:
-            self.table.horizontalHeader().resizeSection(i,75)
-        
         self.table.setAlternatingRowColors(True)
         self.table.setEditTriggers(QTableView.EditTrigger.NoEditTriggers)
         self.table.setSelectionBehavior(QTableView.SelectionBehavior.SelectRows)
@@ -69,7 +68,7 @@ class FilterableTableWidget(QWidget):
         for i, column_name in enumerate(self.column_names[2:], 2):
             # Текстове поле для кожної колонки
             filter_input = QLineEdit()
-            filter_input.setPlaceholderText(f"Пошук в {column_name}")
+            filter_input.setPlaceholderText(f"{column_name}")
             filter_input.textChanged.connect(self.create_filter_function(i))  # Підключення фільтрації до колонки
             self.filter_inputs.append(filter_input)
 
@@ -89,8 +88,14 @@ class FilterableTableWidget(QWidget):
         """
         def filter_column(text):
             self.proxy_model.setFilterKeyColumn(column_index)
-            self.proxy_model.setFilterFixedString(text)
-        
+            # self.proxy_model.setFilterFixedString(text)
+            if column_index in self.filter_columns_from_start:
+                # Фільтрація від початку рядка
+                regex = f"^{text}"
+                self.proxy_model.setFilterRegularExpression(regex)
+            else:
+                self.proxy_model.setFilterFixedString(text)
+
         return filter_column
 
     def add_row(self, row_data):

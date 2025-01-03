@@ -60,9 +60,10 @@ class MainWindow(QMainWindow):
         main_layout = QVBoxLayout()
         top_button_layout = self.create_top_button_layout()
         
-        # self.table = create_table_widget(len(self.table_column), self.table_column, self.on_cell_click)
-        self.table = FilterableTableWidget(self.table_column, self.on_cell_click)
-        # self.table.setColumnHidden(1, True)
+        self.table = FilterableTableWidget(self.table_column, self.on_cell_click, [4,5,6])
+        for i in [4,5,6,7]:
+            self.table.table.horizontalHeader().resizeSection(i,75)
+            
         edit_layout = self.create_edit_layouts()
         action_button_layout = create_CUD_buttons(self.add_record, self.update_record, self.delete_record)
 
