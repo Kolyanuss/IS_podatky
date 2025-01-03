@@ -5,6 +5,8 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt, pyqtSignal
 from ui.styles import apply_style, apply_styles
 from ui.utils import confirm_delete, create_table_widget, create_CUD_buttons
+from ui.filterable_table_view import FilterableTableWidget
+
 from app.database import Database
 from app.user_repository import UserRepository
 
@@ -23,6 +25,7 @@ class AddPersonDialog(QWidget):
             ("email", "Email", "Введіть email"),
             ("phone", "Телефон", "Введіть телефон")
         ]
+        self.table_column = ["Id"]+[item[1] for item in self.fields_config]
         
         self.init_ui()
         self.load_users()
@@ -34,7 +37,8 @@ class AddPersonDialog(QWidget):
         
         apply_styles(self, ["base", "input_field", "label"])
         
-        self.table = create_table_widget(8, ["Id"]+[item[1] for item in self.fields_config], self.on_cell_click)
+        # self.table = create_table_widget(8, ["Id"]+[item[1] for item in self.fields_config], self.on_cell_click)
+        self.table = FilterableTableWidget(self.table_column, [0], self.on_cell_click, [4, 7])
         input_container = self.create_input_container()
         button_layout = create_CUD_buttons(self.add_person, self.update_person, self.delete_record)
         
@@ -80,11 +84,9 @@ class AddPersonDialog(QWidget):
     def load_users(self):
         """Завантаження користувачів у таблицю."""
         self.table.clearSelection()
+        self.table.clear_rows()
         users = self.user_repository.get_all_record()
-        self.table.setRowCount(len(users))
-        for row_idx, user in enumerate(users):
-            for col_idx, data in enumerate(user):
-                self.table.setItem(row_idx, col_idx, QTableWidgetItem(str(data)))
+        [self.table.add_row(user) for user in users]
 
     def add_person(self):
         """Додавання нового користувача в базу даних."""
@@ -109,12 +111,12 @@ class AddPersonDialog(QWidget):
 
     def update_person(self):
         """Оновлення вибраного користувача."""
-        selected_row = self.table.currentRow()
+        selected_row = self.table.get_current_row_index()
         if selected_row == -1:
             QMessageBox.warning(self, "Помилка", "Виберіть запис для оновлення!")
             return
         
-        record_id = self.table.item(selected_row, 0).text()
+        record_id = self.table.get_row_values_by_index(selected_row)[0]
         data = [field.text() for field in self.input_fields.values()]
 
         if all(data[:-2]):
@@ -136,12 +138,12 @@ class AddPersonDialog(QWidget):
 
     def delete_record(self):
         """Видалення вибраного запису."""
-        selected_row = self.table.currentRow()
+        selected_row = self.table.get_current_row_index()
         if selected_row == -1:
             QMessageBox.warning(self, "Помилка", "Виберіть запис для видалення!")
             return
             
-        record_id = self.table.item(selected_row, 0).text()
+        record_id = self.table.get_row_values_by_index(selected_row)[0]
         
         if confirm_delete() == QMessageBox.StandardButton.Yes:
             try:
@@ -154,12 +156,14 @@ class AddPersonDialog(QWidget):
             self.load_users()
         
 
-    def on_cell_click(self, row, column):
+    def on_cell_click(self, model_index):
         """Заповнення полів введення даними вибраного рядка."""        
-        i = 1
-        for field in self.input_fields.values():
-            field.setText(self.table.item(row, i).text())
-            i += 1
+        row = model_index.row()
+        # i = 1
+        row_data = self.table.get_row_values_by_index(row)
+        for i, field in enumerate(self.input_fields.values(), 1):
+            field.setText(row_data[i])
+            # i += 1
 
     def clear_inputs(self):
         """Очищення всіх полів введення."""

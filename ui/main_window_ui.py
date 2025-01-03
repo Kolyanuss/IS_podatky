@@ -60,7 +60,7 @@ class MainWindow(QMainWindow):
         main_layout = QVBoxLayout()
         top_button_layout = self.create_top_button_layout()
         
-        self.table = FilterableTableWidget(self.table_column, self.on_cell_click, [4,5,6])
+        self.table = FilterableTableWidget(self.table_column, [0,1], self.on_cell_click, [4,5,6])
         for i in [4,5,6,7]:
             self.table.table.horizontalHeader().resizeSection(i,75)
             

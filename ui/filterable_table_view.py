@@ -25,7 +25,7 @@ class FilterableTableWidget(QWidget):
                 for i in range(self.model().columnCount()):
                     self.setColumnWidth(i, int(current_widths[i] * scale_factor))
 
-    def __init__(self, column_names, cell_click_callback, filter_columns_from_start=None):
+    def __init__(self, column_names, hiden_columns_id, cell_click_callback, filter_columns_from_start=None):
         """
         Створює віджет таблиці з фільтрацією за колонками.
         
@@ -36,6 +36,7 @@ class FilterableTableWidget(QWidget):
         super().__init__()
 
         self.column_names = column_names
+        self.hiden_columns = hiden_columns_id
         self.filter_columns_from_start = filter_columns_from_start or []
 
         # Модель даних
@@ -51,8 +52,8 @@ class FilterableTableWidget(QWidget):
         self.table = self.ResizableTable()
         self.table.setModel(self.proxy_model)
         
-        self.table.setColumnHidden(0, True)
-        self.table.setColumnHidden(1, True)
+        for i in hiden_columns_id:
+            self.table.setColumnHidden(i, True)
         self.table.resizeColumnsToContents()
         self.table.horizontalHeader().setMinimumSectionSize(60)
         self.table.setAlternatingRowColors(True)
@@ -65,7 +66,9 @@ class FilterableTableWidget(QWidget):
         self.filter_inputs = []
         filter_layout = QHBoxLayout()
 
-        for i, column_name in enumerate(self.column_names[2:], 2):
+        for i, column_name in enumerate(self.column_names):
+            if i in hiden_columns_id:
+                continue
             # Текстове поле для кожної колонки
             filter_input = QLineEdit()
             filter_input.setPlaceholderText(f"{column_name}")
