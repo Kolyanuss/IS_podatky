@@ -1,10 +1,10 @@
 from PyQt6.QtWidgets import (
-    QDialog, QVBoxLayout, QLineEdit, QPushButton, QMessageBox, QFrame, 
-    QTableWidget, QTableWidgetItem, QHBoxLayout, QLabel, QHeaderView, QWidget
+    QVBoxLayout, QLineEdit, QMessageBox, QFrame, 
+    QHBoxLayout, QLabel, QWidget
 )
 from PyQt6.QtCore import Qt, pyqtSignal
 from ui.styles import apply_style, apply_styles
-from ui.utils import confirm_delete, create_table_widget, create_CUD_buttons
+from ui.utils import confirm_delete, create_CUD_buttons
 from ui.filterable_table_view import FilterableTableWidget
 
 from app.database import Database
@@ -37,7 +37,6 @@ class AddPersonDialog(QWidget):
         
         apply_styles(self, ["base", "input_field", "label"])
         
-        # self.table = create_table_widget(8, ["Id"]+[item[1] for item in self.fields_config], self.on_cell_click)
         self.table = FilterableTableWidget(self.table_column, [0], self.on_cell_click, [4, 7])
         input_container = self.create_input_container()
         button_layout = create_CUD_buttons(self.add_person, self.update_person, self.delete_record)
