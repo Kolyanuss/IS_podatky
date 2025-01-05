@@ -72,7 +72,6 @@ CREATE TABLE land_parcel (
     land_parcel_type_id INTEGER NOT NULL,
     address TEXT NOT NULL,
     area REAL NOT NULL,
-    normative_monetary_value_id INTEGER NOT NULL,
     privileged INTEGER NOT NULL CHECK (privileged IN (0, 1)),
     notes TEXT,
 
@@ -81,17 +80,17 @@ CREATE TABLE land_parcel (
         ON UPDATE CASCADE,
     FOREIGN KEY (land_parcel_type_id) REFERENCES land_parcel_type(id)
         ON DELETE RESTRICT
-        ON UPDATE CASCADE,
-    FOREIGN KEY (normative_monetary_value_id) REFERENCES normative_monetary_values(id)
-        ON DELETE RESTRICT
         ON UPDATE CASCADE
 );
 
 CREATE TABLE normative_monetary_values (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    year INTEGER NOT NULL,
-    value REAL NOT NULL CHECK (value >= 0),
-    UNIQUE(id, year)
+    land_id	INTEGER NOT NULL,
+	year	INTEGER NOT NULL,
+	value	REAL NOT NULL CHECK("value" >= 0),
+	FOREIGN KEY (land_id) REFERENCES land_parcel(id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+	PRIMARY KEY("land_id","year")
 );
 
 CREATE TABLE real_estate_taxes (
