@@ -145,6 +145,7 @@ class RealEstateWidget(QWidget):
         completer = QCompleter(person_names, person_dropdown)
         completer.setFilterMode(Qt.MatchFlag.MatchContains)
         completer.setCompletionMode(QCompleter.CompletionMode.PopupCompletion)
+        person_dropdown.setCompleter(completer)
         
         self.load_data()
 

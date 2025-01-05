@@ -1,17 +1,16 @@
 from PyQt6.QtWidgets import (
-    QMainWindow, QTableWidget, QTableWidgetItem, QPushButton, QHeaderView,
-    QVBoxLayout, QHBoxLayout, QWidget, QMenuBar, QMenu, QLineEdit, QComboBox,
-    QCompleter, QFrame, QLabel, QRadioButton, QMessageBox, QStackedLayout
+    QMainWindow, QPushButton, QVBoxLayout, QHBoxLayout, 
+    QWidget, QMenuBar, QMenu, QLabel, QMessageBox, QStackedLayout
 )
 from PyQt6.QtGui import QAction
-from PyQt6.QtCore import Qt
 
 from ui.add_person_ui import AddPersonDialog
-from ui.styles import apply_style, apply_styles, get_button_style
+from ui.styles import apply_styles, get_button_style
 from ui.year_box import YearComboBox
 from ui.min_salary_ui import MinSalaryDialog
 from ui.change_estate_type_ui import EstateTypeDialog
 from ui.real_estate_ui import RealEstateWidget
+from ui.land_parcel_ui import LandParcelWidget
 
 from app.salary_repository import SalaryRepository
 from app.real_estate_repository import RealEstateRepository
@@ -50,13 +49,10 @@ class MainWindow(QMainWindow):
         self.stacked_layout = QStackedLayout()
         
         self.estate_widget = RealEstateWidget(self, self.db)
-        # self.estate_widget.setParent(self)
-        
-        # self.land_parcel_layout = LandParcelLayout(self.db)
-        # self.land_parcel_layout.setParent(self)
+        self.land_widget = LandParcelWidget(self, self.db)
 
         self.stacked_layout.addWidget(self.estate_widget)
-        # stacked_layout.addLayout(self.land_parcel_layout)
+        self.stacked_layout.addWidget(self.land_widget)
 
         main_layout.addLayout(self.stacked_layout)
         

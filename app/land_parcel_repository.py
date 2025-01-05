@@ -1,5 +1,4 @@
 from app.base_repository import BaseRepository
-from app.salary_repository import SalaryRepository
 import app.land_parcel_type_repository as land_type_base_repo
 
 class LandParcelRepository(BaseRepository):
@@ -22,14 +21,13 @@ class LandParcelRepository(BaseRepository):
         SELECT 
             land_parcel.id, 
             users.id AS user_id,
-            land_parcel.name, 
             land_parcel.address, 
             land_parcel.area,
             CASE 
-                WHEN land_parcel.priviliged = 1 THEN 'Так'
-                WHEN land_parcel.priviliged = 0 THEN 'Ні'
+                WHEN land_parcel.privileged = 1 THEN 'Так'
+                WHEN land_parcel.privileged = 0 THEN 'Ні'
                 ELSE ''
-            END AS priviliged,
+            END AS privileged,
             COALESCE(normative_monetary_values.value,''),
             COALESCE(land_parcel_taxes.tax,''),
             CASE 
@@ -66,13 +64,13 @@ class LandParcelRepository(BaseRepository):
         result = self.db.execute_query(query, (type_id,))
         return result[0] if result else None
         
-    def get_area_and_typeid_by_id(self, estate_id):
+    def get_area_typeid_privileged_by_id(self, land_id):
         query = f"""
-        SELECT area, land_parcel_type_id
+        SELECT area, land_parcel_type_id, privileged
         FROM {self.table_name}
         WHERE {self.columns[0]} = ?
         LIMIT 1"""
-        result = self.db.execute_query(query, (estate_id,))
+        result = self.db.execute_query(query, (land_id,))
         return result[0] if result else None
     
     def get_normative_monetary_value_id(self, land_parcel_id):
@@ -94,34 +92,35 @@ class LandParcelRepository(BaseRepository):
         tax = round(normative_monetary_value * tax_rate * area, 2)
         return tax
     
-    def add_record(self, year, land_name, address, area, priviliged, 
+    def add_record(self, year, address, area, privileged, 
             normative_monetary_value, paid, owner_id, land_type_name, notes):
         area = float(area)
         type_record = self.land_type_repo.get_by_name(land_type_name)
         if type_record is None:
             raise Exception("Помилка. Не знайдено такий тип нерухомості!")
         type_id = type_record[0]
-        new_estate_id = super().add_record((land_name, address, area, notes, owner_id, type_id))
+        privileged = 1 if privileged == "Так" else 0
+        new_land_id = super().add_record((owner_id, type_id, address, area, privileged, notes))
         
-        # add new normative_monetary_value
+        self.normative_monetary_value_repo.add_record(new_land_id, year, normative_monetary_value)
         
-        tax = self.calculate_tax(year, area, type_id, normative_monetary_value)
+        tax = self.calculate_tax(year, area, type_id, normative_monetary_value) if privileged == 0 else 0
         paid = 1 if paid == "Так" or tax == 0 else 0
-        self.land_tax_repo.add_record((new_estate_id, year, tax, paid))
+        self.land_tax_repo.add_record((new_land_id, year, tax, paid))
         
-    def update_record(self, land_id, year, land_name, address, area, priviliged, 
+    def update_record(self, land_id, year, address, area, privileged, 
             normative_monetary_value, paid, owner_id, land_type_name, notes):
         area = float(area)
         type_record = self.land_type_repo.get_by_name(land_type_name)
         if type_record is None:
             raise Exception("Помилка. Не знайдено такий тип нерухомості!")
         type_id = type_record[0]
-        super().update_record(land_id, (land_name, address, area, notes, owner_id, type_id))
+        privileged = 1 if privileged == "Так" else 0
+        super().update_record(land_id, (owner_id, type_id, address, area, privileged, notes))
         
-        # update nmv
-        # if ok -> continue
+        self.normative_monetary_value_repo.update_record(land_id, year, normative_monetary_value)
         
-        tax = self.calculate_tax(year, area, type_id, normative_monetary_value)
+        tax = self.calculate_tax(year, area, type_id, normative_monetary_value) if privileged == 0 else 0
         paid = 1 if paid == "Так" or tax == 0 else 0
         if self.land_tax_repo.get_by_id_and_year(land_id, year):
             self.land_tax_repo.update_record(land_id, year, (tax, paid))
@@ -129,15 +128,15 @@ class LandParcelRepository(BaseRepository):
             self.land_tax_repo.add_record((land_id, year, tax, paid))
     
     def update_all_tax(self, year):
-        estate_results = self.get_all_ids()
-        if not estate_results:
+        land_results = self.get_all_ids()
+        if not land_results:
             return
         
         unique_exeptions = set()
         i=0
-        for estate in estate_results:
+        for land in land_results:
             try:
-                self.update_tax(estate[0], year)
+                self.update_tax(land[0], year)
             except Exception as e:
                 unique_exeptions.add(str(e))
                 i+=1
@@ -146,23 +145,24 @@ class LandParcelRepository(BaseRepository):
             raise Exception(f"для ({i}) рядків. Перелік унікальних помилок:\n" + "\n".join(unique_exeptions))
     
     def update_tax(self, land_id, year):
-        estate_record = self.get_area_and_typeid_by_id(land_id)
-        if not estate_record:
+        land_record = self.get_area_typeid_privileged_by_id(land_id)
+        if not land_record:
             raise Exception("Помилка, такий запис не знайдено!")
-        area, type_id = estate_record
+        area, type_id, privileged = land_record
         
         normative_monetary_value = self.normative_monetary_value_repo.get_by_id_and_year(land_id, year)
         if not normative_monetary_value:
             raise Exception("Неможливо розрахувати податок - немає інформації нормативно грошову оцінку!")
         normative_monetary_value = int(normative_monetary_value[2])
         
-        new_tax = self.calculate_tax(year, area, type_id, normative_monetary_value)
+        new_tax = self.calculate_tax(year, area, type_id, normative_monetary_value) if privileged == 0 else 0
         
         if self.land_tax_repo.get_by_id_and_year(land_id, year):
             self.land_tax_repo.update_tax(land_id, year, new_tax)
         else:
             paid=0
             self.land_tax_repo.add_record((land_id, year, new_tax, paid))
+
 
 class NormativeMonetaryValuesRepository(BaseRepository):
     def __init__(self, database):

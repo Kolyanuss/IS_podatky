@@ -1,5 +1,5 @@
 from app.base_repository import BaseRepository
-from app.land_parcel_repository import LandParcelRepository
+import app.land_parcel_repository as land_parcel_repo
 
 class DeleteExeption(Exception):
     pass
@@ -13,6 +13,8 @@ class LandParcelTypeBaseRepository(BaseRepository):
         
         self.type_repo = LandParcelTypeRepository(database)
         self.table_name_type = self.type_repo.table_name
+        
+        self.land_repo = land_parcel_repo.LandParcelRepository(self.db)
         
     def get_type_rates(self, year:int):
         query = f"""
@@ -69,7 +71,7 @@ class LandParcelTypeBaseRepository(BaseRepository):
         if records: # якщо існують записи з інших років для цьго типу (ставки, ліміти площі) - видаляти  не можна
             raise DeleteExeption("Неможливо видалити тип нерухомості, оскільки для нього існує ставки та ліміти площі за інші роки! Спершу видаліть всю інформацію зв'язану з цим типом.")
         
-        records = LandParcelRepository(self.db).get_first_record_by_type_id(type_id)
+        records = self.land_repo.get_first_record_by_type_id(type_id)
         if records: # якщо нерухомість прив'язана до цьго типу - видаляти  не можна
             raise DeleteExeption("Неможливо видалити тип нерухомості, оскільки існують записи про нерухоме майно які вкористовують цей тип! Спершу видаліть обо оновіть всю інформацію зв'язану з цим типом.")
         

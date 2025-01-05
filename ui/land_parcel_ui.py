@@ -23,10 +23,10 @@ class LandParcelWidget(QWidget):
         self.user_repo = UserRepository(db)
         self.input_fields = {}
         self.fields_config = [
-            ("name", "Назва земельної ділянки", "Введіть назву*"),
+            # ("name", "Назва земельної ділянки", "Введіть назву*"),
             ("address", "Адреса земельної ділянки", "Введіть адресу*"),
             ("area", "Площа м^2", "Введіть площу*"),
-            ("priviliged", "Пільговик", ""),
+            ("privileged", "Пільговик", ""),
             ("normative_monetary_value", "Нормативно грошова оцінка", "Введіть нормативно грошову оцінку*"),
             ("tax", "Податок (грн)", ""),
             ("paid", "Сплачено?", ""),
@@ -55,8 +55,7 @@ class LandParcelWidget(QWidget):
         main_layout.addLayout(action_button_layout)
         
         self.setLayout(main_layout)
-    
-    
+
     def create_edit_layouts(self):
         """Створення полів для вводу"""
         input_container = QFrame()
@@ -65,18 +64,18 @@ class LandParcelWidget(QWidget):
         
         action_layout = QHBoxLayout(input_container)
         
-        # name address area
-        for field_name, label_text, placeholder in self.fields_config[:3]: 
+        # address area
+        for field_name, label_text, placeholder in self.fields_config[:2]: 
             field_layout, input_field = create_Vbox(label_text, QLineEdit(), placeholder)
             self.input_fields[field_name] = input_field
             action_layout.addLayout(field_layout)
             
-        self.input_fields["name"].setMaximumWidth(200)
+        # self.input_fields["name"].setMaximumWidth(200)
         self.input_fields["area"].setMaximumWidth(120)
 
-        # priviliged radio button
-        priviliged_layout = QVBoxLayout()
-        priviliged_layout.addWidget(QLabel(self.fields_config[3][1]))
+        # privileged radio button
+        privileged_layout = QVBoxLayout()
+        privileged_layout.addWidget(QLabel(self.fields_config[2][1]))
         
         toggle_layout = QHBoxLayout()
         yes_button = QRadioButton("Так")
@@ -87,16 +86,16 @@ class LandParcelWidget(QWidget):
         yes_button.setStyleSheet("font-size: 14px; padding: 10px 0px 10px 10px;")
         no_button.setStyleSheet("font-size: 14px; padding: 10px 10px 10px 0px;")
         
-        priviliged_layout.addLayout(toggle_layout)
-        self.input_fields[self.fields_config[3][0]] = toggle_layout
+        privileged_layout.addLayout(toggle_layout)
+        self.input_fields[self.fields_config[2][0]] = toggle_layout
 
         # normative_monetary_value input
-        normative_monetary_value_input, input_field = create_Vbox(self.fields_config[4][1], QLineEdit(), self.fields_config[4][2])
-        self.input_fields[self.fields_config[4][0]] = input_field
+        normative_monetary_value_input, input_field = create_Vbox(self.fields_config[3][1], QLineEdit(), self.fields_config[3][2])
+        self.input_fields[self.fields_config[3][0]] = input_field
         
         # paid radio button
         radio_box_layout = QVBoxLayout()
-        radio_box_layout.addWidget(QLabel(self.fields_config[6][1]))
+        radio_box_layout.addWidget(QLabel(self.fields_config[5][1]))
         
         toggle_layout = QHBoxLayout()
         yes_button = QRadioButton("Так")
@@ -108,7 +107,7 @@ class LandParcelWidget(QWidget):
         no_button.setStyleSheet("font-size: 14px; padding: 10px 10px 10px 0px;")
         
         radio_box_layout.addLayout(toggle_layout)
-        self.input_fields[self.fields_config[6][0]] = toggle_layout
+        self.input_fields[self.fields_config[5][0]] = toggle_layout
         
         # person dropdown
         person_dropdown, input_field = create_Vbox(self.fields_config[-3][1], self.create_person_dropdown())
@@ -128,7 +127,7 @@ class LandParcelWidget(QWidget):
         self.input_fields[self.fields_config[-1][0]] = input_field
 
         # stack everything together
-        action_layout.addLayout(priviliged_layout)
+        action_layout.addLayout(privileged_layout)
         action_layout.addLayout(normative_monetary_value_input)
         action_layout.addLayout(radio_box_layout)
         action_layout.addLayout(person_dropdown)
@@ -159,6 +158,7 @@ class LandParcelWidget(QWidget):
     def update_person_dropdown(self):
         person_dropdown:QComboBox = self.input_fields["owner"]
         person_dropdown.clear()
+        
         self.person_data_list = self.user_repo.get_id_and_full_name()
         for person in self.person_data_list:
             person_dropdown.addItem(person[1], person[0])
@@ -168,6 +168,7 @@ class LandParcelWidget(QWidget):
         completer = QCompleter(person_names, person_dropdown)
         completer.setFilterMode(Qt.MatchFlag.MatchContains)
         completer.setCompletionMode(QCompleter.CompletionMode.PopupCompletion)
+        person_dropdown.setCompleter(completer)
         
         self.load_data()
 
@@ -221,9 +222,19 @@ class LandParcelWidget(QWidget):
         row = model_index.row()
         row_data = self.table.get_row_values_by_index(row)
         
-        self.input_fields["name"].setText(row_data[2])
-        self.input_fields["address"].setText(row_data[3])
-        self.input_fields["area"].setText(row_data[4])
+        # self.input_fields["name"].setText(row_data[2])
+        self.input_fields["address"].setText(row_data[2])
+        self.input_fields["area"].setText(row_data[3])
+        
+        # для QRadioButton (privileged)
+        for j in range(self.input_fields["privileged"].count()):
+            widget = self.input_fields["privileged"].itemAt(j).widget()
+            if isinstance(widget, QRadioButton) and widget.text() == row_data[4]:
+                widget.setChecked(True)
+                break
+        
+        # normative_monetary_value
+        self.input_fields["normative_monetary_value"].setText(row_data[5])
         
         # для QRadioButton (paid)
         for j in range(self.input_fields["paid"].count()):
