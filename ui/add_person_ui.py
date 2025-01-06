@@ -29,6 +29,7 @@ class AddPersonDialog(QWidget):
         
         self.init_ui()
         self.load_users()
+        self.table.proxy_model.sort(-1, Qt.SortOrder.AscendingOrder)
 
     def init_ui(self):
         """Ініціалізація основного інтерфейсу"""

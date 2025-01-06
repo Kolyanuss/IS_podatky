@@ -39,11 +39,12 @@ class LandParcelWidget(QWidget):
         
         self.init_ui()
         self.load_data()
+        self.table.proxy_model.sort(-1, Qt.SortOrder.AscendingOrder)
         
     def init_ui(self):
         main_layout = QVBoxLayout()
         
-        self.table = FilterableTableWidget(self.table_column, [0,1], self.on_cell_click, [4,5,6,7,8])
+        self.table = FilterableTableWidget(self.table_column, [0,1], self.on_cell_click, [3,5,6])
         for i in [4,5,6,7,8]:
             self.table.table.horizontalHeader().resizeSection(i,75)
             
@@ -70,7 +71,6 @@ class LandParcelWidget(QWidget):
             self.input_fields[field_name] = input_field
             action_layout.addLayout(field_layout)
             
-        # self.input_fields["name"].setMaximumWidth(200)
         self.input_fields["area"].setMaximumWidth(120)
 
         # privileged radio button (група 1)

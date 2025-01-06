@@ -38,6 +38,7 @@ class RealEstateWidget(QWidget):
         
         self.init_ui()
         self.load_data()
+        self.table.proxy_model.sort(-1, Qt.SortOrder.AscendingOrder)
         
     def init_ui(self):
         main_layout = QVBoxLayout()

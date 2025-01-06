@@ -65,28 +65,32 @@ class FilterableTableWidget(QWidget):
             # Словник для зберігання поточного стану сортування для кожної колонки
             self.sort_states = {}
             # Підключаємо обробник кліку по заголовку
+            self.horizontalHeader().setSortIndicatorShown(False)  # Вимикаємо стандартний індикатор
             self.horizontalHeader().sectionClicked.connect(self.handle_header_click)
 
         def handle_header_click(self, logical_index):
-            # Отримуємо поточний стан сортування для колонки
             current_state = self.sort_states.get(logical_index, 0)
-            
-            # Очищаємо сортування для всіх колонок
-            self.model().sort(-1, Qt.SortOrder.AscendingOrder)
-            
-            # Циклічно змінюємо стан (0 -> 1 -> 2 -> 0)
-            # 0: без сортування
-            # 1: за зростанням
-            # 2: за спаданням
             new_state = (current_state + 1) % 3
             
-            if new_state == 1:  # Сортування за зростанням
-                self.model().sort(logical_index, Qt.SortOrder.AscendingOrder)
-            elif new_state == 2:  # Сортування за спаданням
-                self.model().sort(logical_index, Qt.SortOrder.DescendingOrder)
-            # Якщо new_state == 0, сортування вже очищено
+            # Очищаємо текст всіх заголовків до оригінального
+            for col in range(self.model().columnCount()):
+                original_text = self.model().headerData(col, Qt.Orientation.Horizontal)
+                if "▲" in original_text or "▼" in original_text or "○" in original_text:
+                    original_text = original_text.rstrip(" ▲▼○")
+                self.model().setHeaderData(col, Qt.Orientation.Horizontal, original_text)
             
-            # Зберігаємо новий стан
+            # Додаємо індикатор до поточної колонки
+            header_text = self.model().headerData(logical_index, Qt.Orientation.Horizontal)
+            if new_state == 1:  # Зростання
+                self.model().setHeaderData(logical_index, Qt.Orientation.Horizontal, f"{header_text} ▲")
+                self.model().sort(logical_index, Qt.SortOrder.AscendingOrder)
+            elif new_state == 2:  # Спадання
+                self.model().setHeaderData(logical_index, Qt.Orientation.Horizontal, f"{header_text} ▼")
+                self.model().sort(logical_index, Qt.SortOrder.DescendingOrder)
+            else:  # Без сортування
+                self.model().setHeaderData(logical_index, Qt.Orientation.Horizontal, f"{header_text} ○")
+                self.model().sort(-1, Qt.SortOrder.AscendingOrder)
+            
             self.sort_states[logical_index] = new_state
 
         def resizeEvent(self, event):
@@ -142,7 +146,7 @@ class FilterableTableWidget(QWidget):
         # Дозволяємо сортування для заголовків
         self.table.setSortingEnabled(True)
         apply_styles(self.table, ["table_view"])        
-
+        
         self.filter_inputs = []
         filter_layout = QHBoxLayout()
 
