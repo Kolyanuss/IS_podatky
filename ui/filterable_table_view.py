@@ -9,7 +9,6 @@ from PyQt6.QtWidgets import (
 )
 from ui.styles import apply_styles
 
-
 class FilterableTableWidget(QWidget):
     class CustomSortFilterProxyModel(QSortFilterProxyModel):
         def __init__(self, filters, filter_columns_from_start, *args, **kwargs):
@@ -39,6 +38,35 @@ class FilterableTableWidget(QWidget):
             return True
 
     class ResizableTable(QTableView):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            # Словник для зберігання поточного стану сортування для кожної колонки
+            self.sort_states = {}
+            # Підключаємо обробник кліку по заголовку
+            self.horizontalHeader().sectionClicked.connect(self.handle_header_click)
+
+        def handle_header_click(self, logical_index):
+            # Отримуємо поточний стан сортування для колонки
+            current_state = self.sort_states.get(logical_index, 0)
+            
+            # Очищаємо сортування для всіх колонок
+            self.model().sort(-1, Qt.SortOrder.AscendingOrder)
+            
+            # Циклічно змінюємо стан (0 -> 1 -> 2 -> 0)
+            # 0: без сортування
+            # 1: за зростанням
+            # 2: за спаданням
+            new_state = (current_state + 1) % 3
+            
+            if new_state == 1:  # Сортування за зростанням
+                self.model().sort(logical_index, Qt.SortOrder.AscendingOrder)
+            elif new_state == 2:  # Сортування за спаданням
+                self.model().sort(logical_index, Qt.SortOrder.DescendingOrder)
+            # Якщо new_state == 0, сортування вже очищено
+            
+            # Зберігаємо новий стан
+            self.sort_states[logical_index] = new_state
+
         def resizeEvent(self, event):
             super().resizeEvent(event)  # Викликаємо оригінальний метод обробки події
             self.resize_columns()  # Викликаємо нашу функцію для розтягування колонок
@@ -66,18 +94,17 @@ class FilterableTableWidget(QWidget):
         self.hiden_columns = hiden_columns_id
         self.filter_columns_from_start = filter_columns_from_start or []
 
-        # Модель даних
         self.model = QStandardItemModel()
         self.model.setHorizontalHeaderLabels(self.column_names)
 
-        # Проксі-модель для фільтрації
-        # self.proxy_model = QSortFilterProxyModel()
         self.filters = {}  # Словник для збереження тексту фільтрів для кожної колонки
         self.proxy_model = self.CustomSortFilterProxyModel(self.filters, self.filter_columns_from_start)
         self.proxy_model.setSourceModel(self.model)
         self.proxy_model.setFilterCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
+        # Дозволяємо сортування
+        self.proxy_model.setSortRole(Qt.ItemDataRole.DisplayRole)
+        self.proxy_model.setDynamicSortFilter(True)
 
-        # Таблиця
         self.table = self.ResizableTable()
         self.table.setModel(self.proxy_model)
         
@@ -89,10 +116,11 @@ class FilterableTableWidget(QWidget):
         self.table.setEditTriggers(QTableView.EditTrigger.NoEditTriggers)
         self.table.setSelectionBehavior(QTableView.SelectionBehavior.SelectRows)
         self.table.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.table.clicked.connect(cell_click_callback)  # З'єднання події кліку з переданою функцією
+        self.table.clicked.connect(cell_click_callback)
+        # Дозволяємо сортування для заголовків
+        self.table.setSortingEnabled(True)
         apply_styles(self.table, ["table_view"])        
-        
-        # Поля для фільтрації
+
         self.filter_inputs = []
         filter_layout = QHBoxLayout()
 
@@ -102,9 +130,9 @@ class FilterableTableWidget(QWidget):
             # Текстове поле для кожної колонки
             filter_input = QLineEdit()
             filter_input.setPlaceholderText(str(column_name).replace('\n',' '))
-            filter_input.textChanged.connect(self.create_combined_filter_function(i))  # Підключення комбінованої фільтрації
+            filter_input.textChanged.connect(self.create_combined_filter_function(i))
             self.filter_inputs.append(filter_input)
-            self.filters[i] = ""  # Ініціалізація порожнім текстом
+            self.filters[i] = ""
 
             filter_layout.addWidget(filter_input)
 
@@ -121,9 +149,8 @@ class FilterableTableWidget(QWidget):
         :param column_index: Індекс колонки, яку потрібно фільтрувати
         """
         def update_filter(text):
-            self.filters[column_index] = text  # Оновлюємо текст фільтра для цієї колонки
+            self.filters[column_index] = text
             self.proxy_model.invalidateFilter()
-
         return update_filter
 
     def add_row(self, row_data):
