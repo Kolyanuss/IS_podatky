@@ -80,10 +80,10 @@ class MainWindow(QMainWindow):
 
         # Actions Menu
         actions_menu = QMenu("Actions", self)
-        import_action = QAction("Import from file", self)
-        export_action = QAction("Export", self)
-        restore_action = QAction("Restore DB", self)
-        change_value_action = QAction("Change normative monetary value", self)
+        import_action = QAction("Імпорт в Excel", self)
+        export_action = QAction("Експорт в Excel", self)
+        restore_action = QAction("Відновити резервну копію бази даних", self)
+        change_value_action = QAction("Змінити всі значення нормативно грошової оцінки", self)
 
         actions_menu.addAction(import_action)
         actions_menu.addAction(export_action)

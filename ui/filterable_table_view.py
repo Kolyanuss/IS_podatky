@@ -11,6 +11,33 @@ from ui.styles import apply_styles
 
 
 class FilterableTableWidget(QWidget):
+    class CustomSortFilterProxyModel(QSortFilterProxyModel):
+        def __init__(self, filters, filter_columns_from_start, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.filters = filters
+            self.filter_columns_from_start = filter_columns_from_start
+
+        def filterAcceptsRow(self, source_row, source_parent):
+            """
+            Перевизначає метод для перевірки, чи повинен рядок залишатися у таблиці після фільтрації.
+            """
+            for column_index, text in self.filters.items():
+                if text:  # Якщо фільтр для колонки встановлений
+                    # Отримуємо дані з відповідної комірки
+                    index = self.sourceModel().index(source_row, column_index, source_parent)
+                    data = index.data(Qt.ItemDataRole.DisplayRole)
+                    if not data:  # Пропускаємо, якщо дані порожні
+                        return False
+                    if column_index in self.filter_columns_from_start:
+                        # Перевірка "від початку рядка"
+                        if not str(data).lower().startswith(text.lower()):
+                            return False
+                    else:
+                        # Перевірка наявності тексту у значенні
+                        if text.lower() not in str(data).lower():
+                            return False
+            return True
+
     class ResizableTable(QTableView):
         def resizeEvent(self, event):
             super().resizeEvent(event)  # Викликаємо оригінальний метод обробки події
@@ -44,7 +71,9 @@ class FilterableTableWidget(QWidget):
         self.model.setHorizontalHeaderLabels(self.column_names)
 
         # Проксі-модель для фільтрації
-        self.proxy_model = QSortFilterProxyModel()
+        # self.proxy_model = QSortFilterProxyModel()
+        self.filters = {}  # Словник для збереження тексту фільтрів для кожної колонки
+        self.proxy_model = self.CustomSortFilterProxyModel(self.filters, self.filter_columns_from_start)
         self.proxy_model.setSourceModel(self.model)
         self.proxy_model.setFilterCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
 
@@ -62,6 +91,7 @@ class FilterableTableWidget(QWidget):
         self.table.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.table.clicked.connect(cell_click_callback)  # З'єднання події кліку з переданою функцією
         apply_styles(self.table, ["table_view"])        
+        
         # Поля для фільтрації
         self.filter_inputs = []
         filter_layout = QHBoxLayout()
@@ -71,9 +101,10 @@ class FilterableTableWidget(QWidget):
                 continue
             # Текстове поле для кожної колонки
             filter_input = QLineEdit()
-            filter_input.setPlaceholderText(f"{column_name}")
-            filter_input.textChanged.connect(self.create_filter_function(i))  # Підключення фільтрації до колонки
+            filter_input.setPlaceholderText(str(column_name).replace('\n',' '))
+            filter_input.textChanged.connect(self.create_combined_filter_function(i))  # Підключення комбінованої фільтрації
             self.filter_inputs.append(filter_input)
+            self.filters[i] = ""  # Ініціалізація порожнім текстом
 
             filter_layout.addWidget(filter_input)
 
@@ -83,23 +114,17 @@ class FilterableTableWidget(QWidget):
         main_layout.addWidget(self.table)
         self.setLayout(main_layout)
 
-    def create_filter_function(self, column_index):
+    def create_combined_filter_function(self, column_index):
         """
-        Створює функцію для фільтрації конкретної колонки.
-        
+        Створює функцію для комбінованої фільтрації за всіма колонками.
+
         :param column_index: Індекс колонки, яку потрібно фільтрувати
         """
-        def filter_column(text):
-            self.proxy_model.setFilterKeyColumn(column_index)
-            # self.proxy_model.setFilterFixedString(text)
-            if column_index in self.filter_columns_from_start:
-                # Фільтрація від початку рядка
-                regex = f"^{text}"
-                self.proxy_model.setFilterRegularExpression(regex)
-            else:
-                self.proxy_model.setFilterFixedString(text)
+        def update_filter(text):
+            self.filters[column_index] = text  # Оновлюємо текст фільтра для цієї колонки
+            self.proxy_model.invalidateFilter()
 
-        return filter_column
+        return update_filter
 
     def add_row(self, row_data):
         """
