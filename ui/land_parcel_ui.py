@@ -24,12 +24,12 @@ class LandParcelWidget(QWidget):
         self.input_fields = {}
         self.fields_config = [
             # ("name", "Назва земельної ділянки", "Введіть назву*"),
-            ("address", "Адреса земельної ділянки", "Введіть адресу*"),
-            ("area", "Площа м^2", "Введіть площу*"),
+            ("address", "Урочище, Адреса\nземельної ділянки", "Введіть адресу*"),
+            ("area", "Площа\nм^2", "Введіть площу*"),
             ("privileged", "Пільговик", ""),
-            ("normative_monetary_value", "Нормативно грошова оцінка", "Введіть нормативно грошову оцінку*"),
-            ("tax", "Податок (грн)", ""),
-            ("paid", "Сплачено?", ""),
+            ("normative_monetary_value", "Нормативно\nгрошова оцінка", "Введіть грошову оцінку*"),
+            ("tax", "Податок\n(грн)", ""),
+            ("paid", "Сплачено", ""),
             ("owner", "Власник ділянки", "Виберіть власника*"),
             ("type", "Тип ділянки", "Виберіть тип*"),
             ("notes", "Нотатки", "Ваші нотатки"),
@@ -262,9 +262,10 @@ class LandParcelWidget(QWidget):
 
         if all(data[:-1]):
             try:
-                float(data[2])
+                float(data[1])
+                float(data[3])
             except:
-                QMessageBox.warning(self, "Помилка", "Значення площі повинно бути числом!")
+                QMessageBox.warning(self, "Помилка", "Значення площі та нормативно грошової оцінки повинно бути числом!")
                 return
             year = self.window().get_current_year()
             try:
@@ -288,9 +289,10 @@ class LandParcelWidget(QWidget):
         data = [field for field in self.get_input_data().values()]
         if all(data[:-1]):
             try:
-                float(data[2])
+                float(data[1])
+                float(data[3])
             except:
-                QMessageBox.warning(self, "Помилка", "Значення площі повинно бути числом!")
+                QMessageBox.warning(self, "Помилка", "Значення площі та нормативно грошової оцінки повинно бути числом!")
                 return
             year = self.window().get_current_year()
             try:

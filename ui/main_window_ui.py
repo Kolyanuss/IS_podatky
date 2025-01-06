@@ -9,12 +9,15 @@ from ui.styles import apply_styles, get_button_style
 from ui.year_box import YearComboBox
 from ui.min_salary_ui import MinSalaryDialog
 from ui.change_estate_type_ui import EstateTypeDialog
+from ui.change_land_type_ui import LandTypeDialog
 from ui.real_estate_ui import RealEstateWidget
 from ui.land_parcel_ui import LandParcelWidget
 
 from app.salary_repository import SalaryRepository
 from app.real_estate_repository import RealEstateRepository
+from app.land_parcel_repository import LandParcelRepository
 from app.real_estate_type_repository import RealEstateTypeBaseRepository
+from app.land_parcel_type_repository import LandParcelTypeBaseRepository
 
 class MainWindow(QMainWindow):
     def __init__(self, db):
@@ -23,7 +26,9 @@ class MainWindow(QMainWindow):
         self.db = db
         self.salary_repo = SalaryRepository(db)
         self.estate_repo = RealEstateRepository(db)
-        self.type_base_repo = RealEstateTypeBaseRepository(db)
+        self.land_repo = LandParcelRepository(db)
+        self.estate_type_base_repo = RealEstateTypeBaseRepository(db)
+        self.land_type_base_repo = LandParcelTypeBaseRepository(db)
         
         self.init_ui()
 
@@ -37,32 +42,37 @@ class MainWindow(QMainWindow):
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
 
-        # Layouts
         main_layout = QVBoxLayout()
 
-        # Menu Bar
         self.create_menu_bar()
 
         top_button_layout = self.create_top_button_layout()
-        main_layout.addLayout(top_button_layout)
-        
+
         self.stacked_layout = QStackedLayout()
-        
         self.estate_widget = RealEstateWidget(self, self.db)
         self.land_widget = LandParcelWidget(self, self.db)
-
         self.stacked_layout.addWidget(self.estate_widget)
         self.stacked_layout.addWidget(self.land_widget)
-
-        main_layout.addLayout(self.stacked_layout)
         
+        main_layout.addLayout(top_button_layout)
+        main_layout.addLayout(self.stacked_layout)
         central_widget.setLayout(main_layout)
+        
+        self.combo_check()
     
-    def chnage_table_action(self):
+    def change_table_action(self):
+        self.change_type_button.clicked.disconnect()
         if self.stacked_layout.currentIndex() == 0:
             self.stacked_layout.setCurrentIndex(1)
+            self.change_type_button.setText("Типи земельних ділянок")
+            self.change_type_button.clicked.connect(self.open_change_land_type_dialog)
         else:
             self.stacked_layout.setCurrentIndex(0)
+            self.change_type_button.setText("Типи нерухомості\nвідмінні від земельних ділянок")
+            self.change_type_button.clicked.connect(self.open_change_estate_type_dialog)
+        self.check_type_button()
+        self.load_data()
+            
     
     def create_menu_bar(self):
         """Створення меню бару"""
@@ -108,12 +118,11 @@ class MainWindow(QMainWindow):
 
         # min salary
         self.min_salary_button = QPushButton()
-        self.check_min_salary()
         self.min_salary_button.clicked.connect(self.open_min_salary_dialog)
 
         # switch table
         switch_table_button = QPushButton("Switch Table")
-        switch_table_button.clicked.connect(self.chnage_table_action)
+        switch_table_button.clicked.connect(self.change_table_action)
         switch_table_button.setStyleSheet(get_button_style("neutral") + """
                 QPushButton {
                 min-height: 60px;
@@ -121,8 +130,7 @@ class MainWindow(QMainWindow):
 
         # estate types
         self.change_type_button = QPushButton("Типи нерухомості\nвідмінні від земельних ділянок")
-        self.check_type_button()
-        self.change_type_button.clicked.connect(self.open_change_type_dialog)
+        self.change_type_button.clicked.connect(self.open_change_estate_type_dialog)
 
         # person management
         add_person_button = QPushButton("Список осіб")
@@ -154,15 +162,25 @@ class MainWindow(QMainWindow):
         self.salary_window.edited_signal.connect(self.edited_global_var_ivent)
         self.salary_window.exec()
     
-    def open_change_type_dialog(self):
-        self.estate_type_window = EstateTypeDialog(self.db, self.get_current_year())
-        self.estate_type_window.close_signal.connect(self.combo_check)
-        self.estate_type_window.edited_signal.connect(self.edited_global_var_ivent)
-        self.estate_type_window.exec()
+    def open_change_estate_type_dialog(self):
+        estate_type_window = EstateTypeDialog(self.db, self.get_current_year())
+        estate_type_window.close_signal.connect(self.combo_check)
+        estate_type_window.edited_signal.connect(self.edited_global_var_ivent)
+        estate_type_window.exec()
+    
+    def open_change_land_type_dialog(self):
+        land_type_window = LandTypeDialog(self.db, self.get_current_year())
+        land_type_window.close_signal.connect(self.combo_check)
+        land_type_window.edited_signal.connect(self.edited_global_var_ivent)
+        land_type_window.exec()
     
     def edited_global_var_ivent(self):
         try:
-            self.estate_repo.update_all_tax(self.get_current_year())
+            if self.stacked_layout.currentIndex() == 0: # if current type is real estate:
+                self.estate_repo.update_all_tax(self.get_current_year())
+            else: # else current type is land parcel:
+                self.land_repo.update_all_tax(self.get_current_year())
+                
         except Exception as e:
             QMessageBox.critical(self, "Помилка", f"Не вдалося розрахувати нові податки: {e}")
         self.load_data()
@@ -192,7 +210,11 @@ class MainWindow(QMainWindow):
     
     def check_type_button(self):
         try:
-            records = self.type_base_repo.get_type_rates(self.get_current_year())
+            if self.stacked_layout.currentIndex() == 0: # if current type is real estate:
+                records = self.estate_type_base_repo.get_type_rates(self.get_current_year())
+            else: # else current type is land parcel:
+                records = self.land_type_base_repo.get_type_rates(self.get_current_year())
+                
             if all(element is not None for sublist in records for element in sublist):
                 self.change_type_button.setStyleSheet(get_button_style("success") + """
                     QPushButton {

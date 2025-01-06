@@ -73,15 +73,6 @@ class LandParcelRepository(BaseRepository):
         result = self.db.execute_query(query, (land_id,))
         return result[0] if result else None
     
-    def get_normative_monetary_value_id(self, land_parcel_id):
-        query = f"""
-        SELECT normative_monetary_value_id
-        FROM {self.table_name}
-        WHERE {self.columns[0]} = ?
-        """
-        result = self.db.execute_query(query, (land_parcel_id,))
-        return result[0] if result else None
-    
     def calculate_tax(self, year, area:float, type_id, normative_monetary_value:float):
         type_rate = self.land_parcel_rates_repo.get_by_year_and_typeid(year, type_id)
         if type_rate is None:
@@ -95,6 +86,7 @@ class LandParcelRepository(BaseRepository):
     def add_record(self, year, address, area, privileged, 
             normative_monetary_value, paid, owner_id, land_type_name, notes):
         area = float(area)
+        normative_monetary_value = float(normative_monetary_value)
         type_record = self.land_type_repo.get_by_name(land_type_name)
         if type_record is None:
             raise Exception("Помилка. Не знайдено такий тип нерухомості!")
@@ -102,7 +94,7 @@ class LandParcelRepository(BaseRepository):
         privileged = 1 if privileged == "Так" else 0
         new_land_id = super().add_record((owner_id, type_id, address, area, privileged, notes))
         
-        self.normative_monetary_value_repo.add_record(new_land_id, year, normative_monetary_value)
+        self.normative_monetary_value_repo.add_record((new_land_id, year, normative_monetary_value))
         
         tax = self.calculate_tax(year, area, type_id, normative_monetary_value) if privileged == 0 else 0
         paid = 1 if paid == "Так" or tax == 0 else 0
@@ -111,6 +103,7 @@ class LandParcelRepository(BaseRepository):
     def update_record(self, land_id, year, address, area, privileged, 
             normative_monetary_value, paid, owner_id, land_type_name, notes):
         area = float(area)
+        normative_monetary_value = float(normative_monetary_value)
         type_record = self.land_type_repo.get_by_name(land_type_name)
         if type_record is None:
             raise Exception("Помилка. Не знайдено такий тип нерухомості!")
@@ -118,8 +111,12 @@ class LandParcelRepository(BaseRepository):
         privileged = 1 if privileged == "Так" else 0
         super().update_record(land_id, (owner_id, type_id, address, area, privileged, notes))
         
-        self.normative_monetary_value_repo.update_record(land_id, year, normative_monetary_value)
+        # update\add NMV
+        if self.normative_monetary_value_repo.get_by_id_and_year(land_id, year):
+            self.normative_monetary_value_repo.update_record(land_id, year, normative_monetary_value)
+        self.normative_monetary_value_repo.add_record((land_id, year, normative_monetary_value))
         
+        # update\add tax
         tax = self.calculate_tax(year, area, type_id, normative_monetary_value) if privileged == 0 else 0
         paid = 1 if paid == "Так" or tax == 0 else 0
         if self.land_tax_repo.get_by_id_and_year(land_id, year):

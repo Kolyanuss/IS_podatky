@@ -25,12 +25,12 @@ class RealEstateWidget(QWidget):
         self.fields_config = [
             ("name", "Назва нерухомості", "Введіть назву*"),
             ("address", "Адреса нерухомості", "Введіть адресу*"),
-            ("area", "Площа м^2", "Введіть площу*"),
-            ("area_tax", "Площа податку", ""),
-            ("tax", "Податок (грн)", ""),
-            ("paid", "Сплачено?", ""),
+            ("area", "Площа\nм^2", "Введіть площу*"),
+            ("area_tax", "Площа \nподатку", ""),
+            ("tax", "Податок\n(грн)", ""),
+            ("paid", "Сплачено", ""),
             ("owner", "Власник нерухомості", "Виберіть власника*"),
-            ("type", "Тип нерухомості", "Виберіть тип нерухомості*"),
+            ("type", "Тип\nнерухомості", "Виберіть тип нерухомості*"),
             ("notes", "Нотатки", "Ваші нотатки"),
         ]
         self.table_column = ["id", "person_id"] + [row[1] for row in self.fields_config]
@@ -43,7 +43,7 @@ class RealEstateWidget(QWidget):
         main_layout = QVBoxLayout()
         
         self.table = FilterableTableWidget(self.table_column, [0,1], self.on_cell_click, [4,5,6])
-        for i in [4,5,6,7]:
+        for i in [4,5,6,7,9]:
             self.table.table.horizontalHeader().resizeSection(i,75)
             
         edit_layout = self.create_edit_layouts()

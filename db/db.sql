@@ -24,8 +24,7 @@ CREATE TABLE real_estate_type_rates (
 
 CREATE TABLE land_parcel_type (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    tax_rate REAL NOT NULL
+    name TEXT NOT NULL
 );
 
 CREATE TABLE land_parcel_type_rates (

@@ -18,7 +18,7 @@ class LandParcelTypeBaseRepository(BaseRepository):
         
     def get_type_rates(self, year:int):
         query = f"""
-        SELECT {self.table_name_rates}.id, {self.table_name_type}.name, {self.table_name_rates}.tax_rate, {self.table_name_rates}.tax_area_limit
+        SELECT {self.table_name_rates}.id, {self.table_name_type}.name, {self.table_name_rates}.tax_rate
         FROM {self.table_name_type}
         LEFT JOIN {self.table_name_rates}
         ON {self.table_name_type}.id = {self.table_name_rates}.land_parcel_type_id
@@ -27,7 +27,7 @@ class LandParcelTypeBaseRepository(BaseRepository):
         result = self.db.execute_query(query)
         return result
 
-    def add_record(self, tax_year, type_name, tax_rate, tax_area_limit):
+    def add_record(self, tax_year, type_name, tax_rate):
         # Додати інформацію і тип нерухомості, якщо його не існує
         type_record = self.type_repo.get_by_name(type_name) # id, name
         if not type_record:
@@ -36,14 +36,14 @@ class LandParcelTypeBaseRepository(BaseRepository):
         type_record = self.type_repo.get_by_name(type_name) # id, name        
         rate_record = self.rates_repo.get_by_year_and_typeid(tax_year, type_record[0])
         if not rate_record:
-            self.rates_repo.add_record((tax_year, type_record[0], tax_area_limit, tax_rate))
+            self.rates_repo.add_record((tax_year, type_record[0], tax_rate))
         else:
             raise Exception("Такий запис вже існує!")
 
-    def update_record(self, id, tax_year, type_name, tax_rate, tax_area_limit):
+    def update_record(self, id, tax_year, type_name, tax_rate):
         # Оновити інформацію для типу нерухомості
         if id == "None":
-            self.add_record(tax_year, type_name, tax_rate, tax_area_limit)
+            self.add_record(tax_year, type_name, tax_rate)
             return
         
         type_id = self.rates_repo.get_typeid_by_id(id)
@@ -54,7 +54,7 @@ class LandParcelTypeBaseRepository(BaseRepository):
         if not type_record: # Якщо типу за іменем немає - значить потрібно оновити стару назву
             self.type_repo.update_record(type_id, (type_name,))
         
-        self.rates_repo.update_record(id, (tax_year, type_id, tax_area_limit, tax_rate))
+        self.rates_repo.update_record(id, (tax_year, type_id, tax_rate))
 
     def delete_record(self, id, type_name):
         # Видалити інформацію для типу нерухомості
