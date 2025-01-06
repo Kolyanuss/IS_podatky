@@ -37,6 +37,28 @@ class FilterableTableWidget(QWidget):
                             return False
             return True
 
+        def lessThan(self, left, right):
+            # Отримуємо індекс колонки
+            column = left.column()
+            
+            # Отримуємо значення для порівняння
+            left_data = self.sourceModel().data(left)
+            right_data = self.sourceModel().data(right)
+            
+            # Якщо колонка числова
+            if column in self.filter_columns_from_start:
+                try:
+                    # Конвертуємо строки в числа для порівняння
+                    left_num = float(str(left_data).replace(',', '.'))
+                    right_num = float(str(right_data).replace(',', '.'))
+                    return left_num < right_num
+                except (ValueError, TypeError):
+                    # Якщо конвертація не вдалась, повертаємось до строкового порівняння
+                    return str(left_data) < str(right_data)
+            
+            # Для нечислових колонок використовуємо звичайне порівняння
+            return str(left_data) < str(right_data)
+
     class ResizableTable(QTableView):
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
