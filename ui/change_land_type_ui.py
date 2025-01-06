@@ -13,6 +13,7 @@ from app.database import Database
 class LandTypeDialog(QDialog):
     close_signal = pyqtSignal()
     edited_signal = pyqtSignal()
+    add_update_delete_signal = pyqtSignal()
     def __init__(self, database:Database, year:int):
         super().__init__()
         self.land_type_repo = LandParcelTypeBaseRepository(database)
@@ -108,9 +109,10 @@ class LandTypeDialog(QDialog):
                 return
             try:
                 self.land_type_repo.add_record(self.year, *data)
+                self.add_update_delete_signal.emit()
                 # QMessageBox.information(self, "Успіх", "Тип нерухомості успішно додано!")
             except Exception as e:
-                QMessageBox.critical(self, "Помилка", f"Не вдалося додати тип нерухомості: {e}")
+                QMessageBox.critical(self, "Помилка", f"Не вдалося додати тип земельної ділянки: {e}")
             self.clear_inputs()
             self.load_data()
         else:
@@ -135,9 +137,10 @@ class LandTypeDialog(QDialog):
             try:
                 self.land_type_repo.update_record(record_id, self.year, *data)
                 self.edited_signal.emit()
+                self.add_update_delete_signal.emit()
                 # QMessageBox.information(self, "Успіх", "Тип нерухомості успішно оновлено!")
             except Exception as e:
-                QMessageBox.critical(self, "Помилка", f"Не вдалося оновити тип нерухомості: {e}")
+                QMessageBox.critical(self, "Помилка", f"Не вдалося оновити тип земельної ділянки: {e}")
             self.clear_inputs()
             self.load_data()
         else:
@@ -156,7 +159,8 @@ class LandTypeDialog(QDialog):
         if confirm_delete() == QMessageBox.StandardButton.Yes:
             try:
                 self.land_type_repo.delete_record(record_id, type_name)
-                QMessageBox.information(self, "Успіх", "Тип нерухомості видалено!")
+                self.add_update_delete_signal.emit()
+                QMessageBox.information(self, "Успіх", "Тип земельної ділянки видалено!")
             except DeleteExeption as e:
                 QMessageBox.warning(self, "Увага", f"Інформацію видалено частково: {e}")
             except Exception as e:

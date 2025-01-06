@@ -114,7 +114,8 @@ class LandParcelRepository(BaseRepository):
         # update\add NMV
         if self.normative_monetary_value_repo.get_by_id_and_year(land_id, year):
             self.normative_monetary_value_repo.update_record(land_id, year, normative_monetary_value)
-        self.normative_monetary_value_repo.add_record((land_id, year, normative_monetary_value))
+        else:
+            self.normative_monetary_value_repo.add_record((land_id, year, normative_monetary_value))
         
         # update\add tax
         tax = self.calculate_tax(year, area, type_id, normative_monetary_value) if privileged == 0 else 0

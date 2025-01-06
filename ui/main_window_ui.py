@@ -72,8 +72,7 @@ class MainWindow(QMainWindow):
             self.change_type_button.clicked.connect(self.open_change_estate_type_dialog)
         self.check_type_button()
         self.load_data()
-            
-    
+
     def create_menu_bar(self):
         """Створення меню бару"""
         menu_bar = QMenuBar(self)
@@ -121,7 +120,7 @@ class MainWindow(QMainWindow):
         self.min_salary_button.clicked.connect(self.open_min_salary_dialog)
 
         # switch table
-        switch_table_button = QPushButton("Switch Table")
+        switch_table_button = QPushButton("Змінити таблицю")
         switch_table_button.clicked.connect(self.change_table_action)
         switch_table_button.setStyleSheet(get_button_style("neutral") + """
                 QPushButton {
@@ -166,12 +165,14 @@ class MainWindow(QMainWindow):
         estate_type_window = EstateTypeDialog(self.db, self.get_current_year())
         estate_type_window.close_signal.connect(self.combo_check)
         estate_type_window.edited_signal.connect(self.edited_global_var_ivent)
+        estate_type_window.add_update_delete_signal.connect(self.stacked_layout.currentWidget().update_type_dropdown)
         estate_type_window.exec()
     
     def open_change_land_type_dialog(self):
         land_type_window = LandTypeDialog(self.db, self.get_current_year())
         land_type_window.close_signal.connect(self.combo_check)
         land_type_window.edited_signal.connect(self.edited_global_var_ivent)
+        land_type_window.add_update_delete_signal.connect(self.stacked_layout.currentWidget().update_type_dropdown)
         land_type_window.exec()
     
     def edited_global_var_ivent(self):

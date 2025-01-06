@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import (
     QVBoxLayout, QHBoxLayout, QLineEdit, QComboBox, QWidget,
-    QCompleter, QFrame, QLabel, QRadioButton, QMessageBox
+    QCompleter, QFrame, QLabel, QRadioButton, QMessageBox, QButtonGroup
 )
 from PyQt6.QtCore import Qt
 
@@ -73,41 +73,51 @@ class LandParcelWidget(QWidget):
         # self.input_fields["name"].setMaximumWidth(200)
         self.input_fields["area"].setMaximumWidth(120)
 
-        # privileged radio button
+        # privileged radio button (група 1)
         privileged_layout = QVBoxLayout()
         privileged_layout.addWidget(QLabel(self.fields_config[2][1]))
         
-        toggle_layout = QHBoxLayout()
-        yes_button = QRadioButton("Так")
-        no_button = QRadioButton("Ні")
-        no_button.setChecked(True)  # За замовчуванням вибрано "Ні"
-        toggle_layout.addWidget(yes_button)
-        toggle_layout.addWidget(no_button)
-        yes_button.setStyleSheet("font-size: 14px; padding: 10px 0px 10px 10px;")
-        no_button.setStyleSheet("font-size: 14px; padding: 10px 10px 10px 0px;")
+        toggle_layout1 = QHBoxLayout()
+        yes_button1 = QRadioButton("Так")
+        no_button1 = QRadioButton("Ні")
+        no_button1.setChecked(True)  # За замовчуванням вибрано "Ні"
+        toggle_layout1.addWidget(yes_button1)
+        toggle_layout1.addWidget(no_button1)
+        yes_button1.setStyleSheet("font-size: 14px; padding: 10px 0px 10px 10px;")
+        no_button1.setStyleSheet("font-size: 14px; padding: 10px 10px 10px 0px;")
         
-        privileged_layout.addLayout(toggle_layout)
-        self.input_fields[self.fields_config[2][0]] = toggle_layout
+        # Додаємо кнопки до групи 1
+        self.privileged_group = QButtonGroup()
+        self.privileged_group.addButton(yes_button1)
+        self.privileged_group.addButton(no_button1)
+        
+        privileged_layout.addLayout(toggle_layout1)
+        self.input_fields[self.fields_config[2][0]] = toggle_layout1
 
         # normative_monetary_value input
         normative_monetary_value_input, input_field = create_Vbox(self.fields_config[3][1], QLineEdit(), self.fields_config[3][2])
         self.input_fields[self.fields_config[3][0]] = input_field
         
-        # paid radio button
+        # paid radio button (група 2)
         radio_box_layout = QVBoxLayout()
         radio_box_layout.addWidget(QLabel(self.fields_config[5][1]))
         
-        toggle_layout = QHBoxLayout()
-        yes_button = QRadioButton("Так")
-        no_button = QRadioButton("Ні")
-        no_button.setChecked(True)  # За замовчуванням вибрано "Ні"
-        toggle_layout.addWidget(yes_button)
-        toggle_layout.addWidget(no_button)
-        yes_button.setStyleSheet("font-size: 14px; padding: 10px 0px 10px 10px;")
-        no_button.setStyleSheet("font-size: 14px; padding: 10px 10px 10px 0px;")
+        toggle_layout2 = QHBoxLayout()
+        yes_button2 = QRadioButton("Так")
+        no_button2 = QRadioButton("Ні")
+        no_button2.setChecked(True)  # За замовчуванням вибрано "Ні"
+        toggle_layout2.addWidget(yes_button2)
+        toggle_layout2.addWidget(no_button2)
+        yes_button2.setStyleSheet("font-size: 14px; padding: 10px 0px 10px 10px;")
+        no_button2.setStyleSheet("font-size: 14px; padding: 10px 10px 10px 0px;")
         
-        radio_box_layout.addLayout(toggle_layout)
-        self.input_fields[self.fields_config[5][0]] = toggle_layout
+        # Додаємо кнопки до групи 2
+        self.paid_group = QButtonGroup()
+        self.paid_group.addButton(yes_button2)
+        self.paid_group.addButton(no_button2)
+        
+        radio_box_layout.addLayout(toggle_layout2)
+        self.input_fields[self.fields_config[5][0]] = toggle_layout2
         
         # person dropdown
         person_dropdown, input_field = create_Vbox(self.fields_config[-3][1], self.create_person_dropdown())
@@ -135,6 +145,7 @@ class LandParcelWidget(QWidget):
         action_layout.addLayout(note_input)
 
         return input_container
+
     
     def create_person_dropdown(self):
         person_dropdown = QComboBox()
@@ -172,6 +183,15 @@ class LandParcelWidget(QWidget):
         
         self.load_data()
 
+    def update_type_dropdown(self):
+        type_dropdown:QComboBox = self.input_fields["type"]
+        type_dropdown.clear()
+        
+        type_list = self.land_type_repo.get_all_record()
+        type_dropdown.addItems([row[1] for row in type_list])
+        type_dropdown.setPlaceholderText(self.fields_config[-2][2])
+        type_dropdown.setCurrentIndex(-1)
+    
     def load_data(self):
         """Завантаження інформації з бази даних в таблицю"""
         self.table.clearSelection()

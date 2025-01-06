@@ -55,7 +55,6 @@ class RealEstateWidget(QWidget):
         
         self.setLayout(main_layout)
     
-    
     def create_edit_layouts(self):
         """Створення полів для вводу"""
         input_container = QFrame()
@@ -148,6 +147,15 @@ class RealEstateWidget(QWidget):
         person_dropdown.setCompleter(completer)
         
         self.load_data()
+
+    def update_type_dropdown(self):
+        type_dropdown:QComboBox = self.input_fields["type"]
+        type_dropdown.clear()
+        
+        type_list = self.type_repo.get_all_record()
+        type_dropdown.addItems([row[1] for row in type_list])
+        type_dropdown.setPlaceholderText("Тип нерухомості")
+        type_dropdown.setCurrentIndex(-1)
 
     def load_data(self):
         """Завантаження інформації з бази даних в таблицю"""
