@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import (
-    QMainWindow, QPushButton, QVBoxLayout, QHBoxLayout, 
+    QMainWindow, QPushButton, QVBoxLayout, QHBoxLayout, QDialog,
     QWidget, QMenuBar, QMenu, QLabel, QMessageBox, QStackedLayout
 )
 from PyQt6.QtGui import QAction
@@ -12,6 +12,7 @@ from ui.change_estate_type_ui import EstateTypeDialog
 from ui.change_land_type_ui import LandTypeDialog
 from ui.real_estate_ui import RealEstateWidget
 from ui.land_parcel_ui import LandParcelWidget
+from ui.nmv_dialog import InputNMVDialog
 
 from app.salary_repository import SalaryRepository
 from app.real_estate_repository import RealEstateRepository
@@ -84,16 +85,13 @@ class MainWindow(QMainWindow):
         export_action = QAction("Експорт в Excel", self)
         restore_action = QAction("Відновити резервну копію бази даних", self)
         change_value_action = QAction("Змінити всі значення нормативно грошової оцінки", self)
-
+        change_value_action.triggered.connect(self.open_nmv_dialog)
+        
         actions_menu.addAction(import_action)
         actions_menu.addAction(export_action)
         actions_menu.addAction(restore_action)
         actions_menu.addAction(change_value_action)
         menu_bar.addMenu(actions_menu)
-
-        # About Menu
-        about_menu = QMenu("About", self)
-        menu_bar.addMenu(about_menu)
 
     def create_top_button_layout(self):
         """Створення лейауту з кнопками"""
@@ -147,6 +145,11 @@ class MainWindow(QMainWindow):
 
         return button_layout
 
+    def open_nmv_dialog(self):
+        dialog = InputNMVDialog()
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            self.stacked_layout.widget(1).update_all_normative_monetary_values(dialog.value1, dialog.value2)
+    
     def open_add_person_dialog(self):
         """Відкриття діалогу додавання користувача."""
         current_layout = self.stacked_layout.currentWidget()

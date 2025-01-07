@@ -8,7 +8,7 @@ from ui.styles import apply_style
 from ui.utils import create_CUD_buttons, create_Vbox, confirm_delete
 from ui.filterable_table_view import FilterableTableWidget
 
-from app.land_parcel_repository import LandParcelRepository
+from app.land_parcel_repository import LandParcelRepository, NormativeMonetaryValuesRepository
 from app.land_parcel_type_repository import LandParcelTypeRepository
 from app.user_repository import UserRepository
 
@@ -342,4 +342,9 @@ class LandParcelWidget(QWidget):
                 QMessageBox.critical(self, "Помилка", f"Не вдалося видалити інформацію про нерухомість: {e}")
             self.clear_inputs()
             self.load_data()
-   
+
+    def update_all_normative_monetary_values(self, old_value, new_value):
+        year = self.window().get_current_year()
+        NormativeMonetaryValuesRepository(self.db).replace_values(year, old_value, new_value)
+        self.load_data()
+        self.window().edited_global_var_ivent() # update all taxes

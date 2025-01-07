@@ -192,6 +192,14 @@ class NormativeMonetaryValuesRepository(BaseRepository):
         WHERE {self.columns[0]} = ? AND {self.columns[1]} = ?
         """
         self.db.execute_non_query(query, (value, record_id, year))
+    
+    def replace_values(self, year, old_value, new_value):
+        query = f"""
+        UPDATE {self.table_name} 
+        SET {self.columns[-1]} = ?
+        WHERE {self.columns[1]} = ? AND {self.columns[-1]} = ?
+        """
+        self.db.execute_non_query(query, (new_value, year, old_value))
 
 class LandParcelTaxesRepository(BaseRepository):
     def __init__(self, database):
