@@ -83,17 +83,20 @@ class MainWindow(QMainWindow):
         self.setMenuBar(menu_bar)
 
         # Actions Menu
-        actions_menu = QMenu("Actions", self)
+        actions_menu = QMenu("Дії", self)
         import_action = QAction("Імпорт в Excel", self)
-        export_action = QAction("Експорт в Excel", self)
+        export_action = QAction("Експорт з Excel", self)
         restore_action = QAction("Відновити резервну копію бази даних", self)
         restore_action.triggered.connect(self.restore_db_backup_action)
+        place_value_action = QAction("Вставити значення нормативно грошової оцінки як за попередній рік", self)
+        # place_value_action.triggered.connect(self.)
         change_value_action = QAction("Змінити всі значення нормативно грошової оцінки", self)
         change_value_action.triggered.connect(self.open_nmv_dialog)
         
         actions_menu.addAction(import_action)
         actions_menu.addAction(export_action)
         actions_menu.addAction(restore_action)
+        actions_menu.addAction(place_value_action)
         actions_menu.addAction(change_value_action)
         menu_bar.addMenu(actions_menu)
 
@@ -165,30 +168,33 @@ class MainWindow(QMainWindow):
     def open_min_salary_dialog(self):
         self.salary_window = MinSalaryDialog(self.db, self.get_current_year())
         self.salary_window.close_signal.connect(self.combo_check)
-        self.salary_window.edited_signal.connect(self.edited_global_var_ivent)
+        self.salary_window.edited_signal.connect(self.update_all_estate_tax)
         self.salary_window.exec()
     
     def open_change_estate_type_dialog(self):
         estate_type_window = EstateTypeDialog(self.db, self.get_current_year())
         estate_type_window.close_signal.connect(self.combo_check)
-        estate_type_window.edited_signal.connect(self.edited_global_var_ivent)
+        estate_type_window.edited_signal.connect(self.update_all_estate_tax)
         estate_type_window.add_update_delete_signal.connect(self.stacked_layout.currentWidget().update_type_dropdown)
         estate_type_window.exec()
     
     def open_change_land_type_dialog(self):
         land_type_window = LandTypeDialog(self.db, self.get_current_year())
         land_type_window.close_signal.connect(self.combo_check)
-        land_type_window.edited_signal.connect(self.edited_global_var_ivent)
+        land_type_window.edited_signal.connect(self.update_all_land_tax)
         land_type_window.add_update_delete_signal.connect(self.stacked_layout.currentWidget().update_type_dropdown)
         land_type_window.exec()
     
-    def edited_global_var_ivent(self):
+    def update_all_estate_tax(self):
         try:
-            if self.stacked_layout.currentIndex() == 0: # if current type is real estate:
-                self.estate_repo.update_all_tax(self.get_current_year())
-            else: # else current type is land parcel:
-                self.land_repo.update_all_tax(self.get_current_year())
-                
+            self.estate_repo.update_all_tax(self.get_current_year())
+        except Exception as e:
+            QMessageBox.critical(self, "Помилка", f"Не вдалося розрахувати нові податки: {e}")
+        self.load_data()
+    
+    def update_all_land_tax(self):
+        try:
+            self.land_repo.update_all_tax(self.get_current_year())
         except Exception as e:
             QMessageBox.critical(self, "Помилка", f"Не вдалося розрахувати нові податки: {e}")
         self.load_data()

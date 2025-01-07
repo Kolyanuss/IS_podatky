@@ -337,9 +337,9 @@ class LandParcelWidget(QWidget):
         if confirm_delete() == QMessageBox.StandardButton.Yes:
             try:
                 self.land_repo.delete_record(record_id)
-                QMessageBox.information(self, "Успіх", "Нерухомість видалено!")
+                QMessageBox.information(self, "Успіх", "Земельну ділянку видалено!")
             except Exception as e:
-                QMessageBox.critical(self, "Помилка", f"Не вдалося видалити інформацію про нерухомість: {e}")
+                QMessageBox.critical(self, "Помилка", f"Не вдалося видалити інформацію про земельну ділянку: {e}")
             self.clear_inputs()
             self.load_data()
 

@@ -23,6 +23,7 @@ class Database:
         try:
             self.connection = sqlite3.connect(self.db_path)
             print(f"Підключено до бази даних: {self.db_path}")
+            self.connection.execute("PRAGMA foreign_keys = ON;")
         except sqlite3.Error as e:
             print(f"Помилка підключення до бази даних: {e}")
             raise e
