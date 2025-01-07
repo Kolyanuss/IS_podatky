@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import (
-    QMainWindow, QPushButton, QVBoxLayout, QHBoxLayout, QDialog,
-    QWidget, QMenuBar, QMenu, QLabel, QMessageBox, QStackedLayout
+    QMainWindow, QPushButton, QVBoxLayout, QHBoxLayout, QDialog, QFileDialog,
+    QWidget, QMenuBar, QMenu, QLabel, QMessageBox, QStackedLayout, QApplication
 )
 from PyQt6.QtGui import QAction
 
@@ -14,6 +14,7 @@ from ui.real_estate_ui import RealEstateWidget
 from ui.land_parcel_ui import LandParcelWidget
 from ui.nmv_dialog import InputNMVDialog
 
+from app.database import Database
 from app.salary_repository import SalaryRepository
 from app.real_estate_repository import RealEstateRepository
 from app.land_parcel_repository import LandParcelRepository
@@ -21,7 +22,7 @@ from app.real_estate_type_repository import RealEstateTypeBaseRepository
 from app.land_parcel_type_repository import LandParcelTypeBaseRepository
 
 class MainWindow(QMainWindow):
-    def __init__(self, db):
+    def __init__(self, db:Database):
         super().__init__()
         self.input_fields = {}
         self.db = db
@@ -30,6 +31,8 @@ class MainWindow(QMainWindow):
         self.land_repo = LandParcelRepository(db)
         self.estate_type_base_repo = RealEstateTypeBaseRepository(db)
         self.land_type_base_repo = LandParcelTypeBaseRepository(db)
+        
+        QApplication.instance().aboutToQuit.connect(db.save_DB_backup)
         
         self.init_ui()
 
@@ -84,6 +87,7 @@ class MainWindow(QMainWindow):
         import_action = QAction("Імпорт в Excel", self)
         export_action = QAction("Експорт в Excel", self)
         restore_action = QAction("Відновити резервну копію бази даних", self)
+        restore_action.triggered.connect(self.restore_db_backup_action)
         change_value_action = QAction("Змінити всі значення нормативно грошової оцінки", self)
         change_value_action.triggered.connect(self.open_nmv_dialog)
         
@@ -237,3 +241,13 @@ class MainWindow(QMainWindow):
 
     def load_data(self):
         self.stacked_layout.currentWidget().load_data()
+
+    def restore_db_backup_action(self):
+        """Обробка кнопки завантаження копії."""
+        file_path, _ = QFileDialog.getOpenFileName(self, "Виберіть резервну копію", self.db.backup_dir, "SQLite Files (*.db)")
+        if file_path:
+            if self.db.load_DB_backup(file_path):
+                QMessageBox.information(self, "Успіх", "Базу даних успішно відновлено!")
+                self.stacked_layout.currentWidget().load_data()
+            else:
+                QMessageBox.critical(self, "Помилка", "Не вдалося відновити базу даних.")
