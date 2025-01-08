@@ -27,11 +27,11 @@ def create_CUD_buttons(add_func, update_func, delete_func):
     
     return button_layout
 
-def confirm_delete():
+def confirm_delete(custom_text:str='Ви впевнені, що хочете видалити цей запис?'):
     reply = QMessageBox()
     reply.setIcon(QMessageBox.Icon.Question)
     reply.setWindowTitle('Підтвердження')
-    reply.setText('Ви впевнені, що хочете видалити цей запис?')
+    reply.setText(custom_text)
     reply.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
     reply.button(QMessageBox.StandardButton.Yes).setText('Так, видалити')
     reply.button(QMessageBox.StandardButton.No).setText('Ні, скасувати')

@@ -9,12 +9,17 @@ from ui.filterable_table_view import FilterableTableWidget
 
 from app.database import Database
 from app.user_repository import UserRepository
+import app.real_estate_repository as estate_repo
+import app.land_parcel_repository as land_repo
 
 class AddPersonDialog(QWidget):
     edited_signal = pyqtSignal()
     def __init__(self, db: Database):
         super().__init__()
         self.user_repository = UserRepository(db)
+        self.estate_repo = estate_repo.RealEstateRepository(db)
+        self.land_repo = land_repo.LandParcelRepository(db)
+        
         self.input_fields = {}
         self.fields_config = [
             ("last_name", "Прізвище", "Введіть прізвище*"),
@@ -145,11 +150,19 @@ class AddPersonDialog(QWidget):
             
         record_id = self.table.get_row_values_by_index(selected_row)[0]
         
+        # перевірка чи є власність у людини
+        estate_records = self.estate_repo.get_all_estate_by_user_id(record_id)
+        land_records = self.land_repo.get_all_land_by_user_id(record_id)
+        estate_land_count = len(estate_records) + len(land_records)
+        if estate_land_count > 0:
+            QMessageBox.warning(self, "Увага", f"Не можна видаляти людину яка володіє ділянками ({estate_land_count}шт)")
+            return
+        
         if confirm_delete() == QMessageBox.StandardButton.Yes:
             try:
                 self.user_repository.delete_record(record_id)
                 self.edited_signal.emit()
-                QMessageBox.information(self, "Успіх", "Користувача видалено!")
+                QMessageBox.information(self, "Успіх", "Особу видалено!")
             except Exception as e:
                 QMessageBox.critical(self, "Помилка", f"Не вдалося видалити користувача: {e}")
             self.clear_inputs()

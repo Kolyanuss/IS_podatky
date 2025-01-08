@@ -51,6 +51,14 @@ class RealEstateRepository(BaseRepository):
         """
         return self.db.execute_query(query, (year,year))
     
+    def get_all_estate_by_user_id(self, user_id):
+        """повертає список id які належать user_id"""
+        query = f"""
+        SELECT {self.columns[0]} FROM {self.table_name}
+        WHERE user_id = ?
+        """
+        return self.db.execute_query(query, (user_id,))
+    
     def get_first_record_by_type_id(self, type_id):
         query = f"""
         SELECT id FROM {self.table_name}

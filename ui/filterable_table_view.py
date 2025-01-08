@@ -75,8 +75,8 @@ class FilterableTableWidget(QWidget):
             # Очищаємо текст всіх заголовків до оригінального
             for col in range(self.model().columnCount()):
                 original_text = self.model().headerData(col, Qt.Orientation.Horizontal)
-                if "▲" in original_text or "▼" in original_text or "○" in original_text:
-                    original_text = original_text.rstrip(" ▲▼○")
+                if "▲" in original_text or "▼" in original_text:
+                    original_text = original_text.rstrip(" ▲▼")
                 self.model().setHeaderData(col, Qt.Orientation.Horizontal, original_text)
             
             # Додаємо індикатор до поточної колонки
@@ -88,7 +88,7 @@ class FilterableTableWidget(QWidget):
                 self.model().setHeaderData(logical_index, Qt.Orientation.Horizontal, f"{header_text} ▼")
                 self.model().sort(logical_index, Qt.SortOrder.DescendingOrder)
             else:  # Без сортування
-                self.model().setHeaderData(logical_index, Qt.Orientation.Horizontal, f"{header_text} ○")
+                self.model().setHeaderData(logical_index, Qt.Orientation.Horizontal, f"{header_text}")
                 self.model().sort(-1, Qt.SortOrder.AscendingOrder)
             
             self.sort_states[logical_index] = new_state
