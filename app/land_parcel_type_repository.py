@@ -76,6 +76,10 @@ class LandParcelTypeBaseRepository(BaseRepository):
             raise DeleteExeption("Неможливо видалити тип нерухомості, оскільки існують записи про нерухоме майно які вкористовують цей тип! Для повного видалення типу - спершу видаліть або оновіть всю інформацію зв'язану з цим типом.")
         
         self.type_repo.delete_record(type_id)
+
+    def get_typeId_by_typeName(self, type_name):
+        result = self.type_repo.get_by_name(type_name)
+        return result[0] if result else None
         
         
 class LandParcelTypeRepository(BaseRepository):

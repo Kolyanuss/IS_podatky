@@ -75,6 +75,9 @@ class RealEstateTypeBaseRepository(BaseRepository):
         
         self.type_repo.delete_record(type_id)
         
+    def get_typeId_by_typeName(self, type_name):
+        result = self.type_repo.get_by_name(type_name)
+        return result[0] if result else None
         
 class RealEstateTypeRepository(BaseRepository):
     def __init__(self, database):

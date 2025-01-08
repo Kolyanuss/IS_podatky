@@ -51,6 +51,13 @@ class RealEstateRepository(BaseRepository):
         """
         return self.db.execute_query(query, (year,year))
     
+    def get_all_ids_by_type_id(self, type_id):
+        query = f"""
+        SELECT id FROM {self.table_name}
+        WHERE {self.columns[-1]} = ?
+        """
+        return self.db.execute_query(query, (type_id,))
+    
     def get_all_estate_by_user_id(self, user_id):
         """повертає список id які належать user_id"""
         query = f"""
@@ -124,11 +131,15 @@ class RealEstateRepository(BaseRepository):
             self.estate_tax_repo.update_record(estate_id, year, (tax, paid))
         else:
             self.estate_tax_repo.add_record((estate_id, year, tax, paid))
-    
-    def update_all_tax(self, year):
-        estate_results = self.get_all_ids()
+
+    def update_all_tax(self, year, type_id=None):
+        if type_id is None:
+            estate_results = self.get_all_ids()
+        else:
+            estate_results = self.get_all_ids_by_type_id(type_id)
+            
         if not estate_results:
-            return
+            raise Exception("Не знайдено записи для оновлення!")
         
         unique_exeptions = set()
         i=0

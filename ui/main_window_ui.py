@@ -186,16 +186,18 @@ class MainWindow(QMainWindow):
         land_type_window.update_table_signal.connect(self.load_data)
         land_type_window.exec()
     
-    def update_all_estate_tax(self):
+    def update_all_estate_tax(self, type_record_id:int = None):
         try:
-            self.estate_repo.update_all_tax(self.get_current_year())
+            self.estate_repo.update_all_tax(self.get_current_year(), type_record_id)
+            QMessageBox.information(self, "Успіх!", "Нові податки було успішно розраховано!")
         except Exception as e:
             QMessageBox.warning(self, "Попередження!", f"Не вдалося розрахувати нові податки: {e}")
         self.load_data()
     
-    def update_all_land_tax(self):
+    def update_all_land_tax(self, type_record_id:int = None):
         try:
-            self.land_repo.update_all_tax(self.get_current_year())
+            self.land_repo.update_all_tax(self.get_current_year(), type_record_id)
+            QMessageBox.information(self, "Успіх!", "Нові податки було успішно розраховано!")
         except Exception as e:
             QMessageBox.warning(self, "Попередження!", f"Не вдалося розрахувати нові податки: {e}")
         self.load_data()

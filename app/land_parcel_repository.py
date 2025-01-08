@@ -15,6 +15,13 @@ class LandParcelRepository(BaseRepository):
     def get_all_ids(self):
         query = f"SELECT {self.columns[0]} FROM {self.table_name}"
         return self.db.execute_query(query)
+        
+    def get_all_ids_by_type_id(self, type_id):
+        query = f"""
+        SELECT id FROM {self.table_name}
+        WHERE {self.columns[2]} = ?
+        """
+        return self.db.execute_query(query, (type_id,))
     
     def get_all_record_by_year(self, year):
         query = """
@@ -133,10 +140,14 @@ class LandParcelRepository(BaseRepository):
         else:
             self.land_tax_repo.add_record((land_id, year, tax, paid))
     
-    def update_all_tax(self, year):
-        land_results = self.get_all_ids()
+    def update_all_tax(self, year, type_id=None):
+        if type_id is None:
+            land_results = self.get_all_ids()
+        else:
+            land_results = self.get_all_ids_by_type_id(type_id)
+
         if not land_results:
-            return
+            raise Exception("Не знайдено записи для оновлення!")
         
         unique_exeptions = set()
         i=0
