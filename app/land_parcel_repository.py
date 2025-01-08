@@ -177,6 +177,17 @@ class NormativeMonetaryValuesRepository(BaseRepository):
         self.table_name = "normative_monetary_values"
         self.columns = self.get_table_columns()
         
+    def get_latest_value_by_id_and_year(self, id, year):
+        """Повертає нормативно грошову оцінку за останній доступний рік, якщо існує. Інакше - None"""
+        query = f"""
+        SELECT {self.columns[-1]} FROM {self.table_name}
+        WHERE year < ? AND {self.columns[0]} = ?
+        ORDER BY year DESC
+        LIMIT 1
+        """
+        result = self.db.execute_query(query, (year, id))
+        return result[0][0] if result else None
+    
     def get_by_id_and_year(self, record_id, year):
         query = f"""
         SELECT * FROM {self.table_name}

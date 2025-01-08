@@ -14,6 +14,7 @@ class LandTypeDialog(QDialog):
     close_signal = pyqtSignal()
     edited_signal = pyqtSignal()
     add_update_delete_signal = pyqtSignal()
+    update_table_signal = pyqtSignal()
     def __init__(self, database:Database, year:int):
         super().__init__()
         self.land_type_repo = LandParcelTypeBaseRepository(database)
@@ -163,8 +164,9 @@ class LandTypeDialog(QDialog):
                 QMessageBox.information(self, "Успіх", "Тип земельної ділянки видалено!")
             except DeleteExeption as e:
                 QMessageBox.warning(self, "Увага", f"Інформацію видалено частково: {e}")
+                self.update_table_signal.emit()
             except Exception as e:
                 QMessageBox.critical(self, "Помилка", f"Не вдалося видалити запис: {e}")
-            
+
             self.clear_inputs()
             self.load_data()

@@ -21,6 +21,7 @@ class LandParcelWidget(QWidget):
         self.land_repo = LandParcelRepository(db)
         self.land_type_repo = LandParcelTypeRepository(db)
         self.user_repo = UserRepository(db)
+        self.normative_monetary_value_repo = NormativeMonetaryValuesRepository(db)
         self.input_fields = {}
         self.fields_config = [
             # ("name", "Назва земельної ділянки", "Введіть назву*"),
@@ -345,6 +346,30 @@ class LandParcelWidget(QWidget):
 
     def update_all_normative_monetary_values(self, old_value, new_value):
         year = self.window().get_current_year()
-        NormativeMonetaryValuesRepository(self.db).replace_values(year, old_value, new_value)
+        self.normative_monetary_value_repo.replace_values(year, old_value, new_value)
         self.load_data()
         self.window().edited_global_var_ivent() # update all taxes
+    
+    def insert_nmv_from_last_year(self):
+        try:
+            land_ids = [record[0] for record in self.land_repo.get_all_ids()]
+            current_year = self.window().get_current_year()
+            skiped_value = 0
+            not_finded_value = 0
+            completed_values = 0
+            for id in land_ids:
+                nmv_record = self.normative_monetary_value_repo.get_by_id_and_year(id, current_year)
+                if not nmv_record: # якщо значення немає - копіюємо за попередній рік
+                    old_normative_monetary_value = self.normative_monetary_value_repo.get_latest_value_by_id_and_year(id, current_year)
+                    if old_normative_monetary_value is not None:
+                        self.normative_monetary_value_repo.add_record((id, current_year, old_normative_monetary_value))
+                        completed_values += 1
+                    else:
+                        not_finded_value += 1
+                else:
+                    skiped_value += 1
+            QMessageBox.information(self, "Успіх!", f"Оновлення нормативно грошових оцінок завершено!\n Оновлено {completed_values} записів.\n Пропущено {skiped_value} заповнених значень.\n Пропущено {not_finded_value} не знайдених значень.")
+            self.load_data()
+            self.window().update_all_land_tax()
+        except Exception as e:
+            QMessageBox.critical(self, "Помилка!", f"Помилка при копіюванні нормативно грошових оцінок! {e}")

@@ -48,8 +48,6 @@ class MainWindow(QMainWindow):
 
         main_layout = QVBoxLayout()
 
-        self.create_menu_bar()
-
         top_button_layout = self.create_top_button_layout()
 
         self.stacked_layout = QStackedLayout()
@@ -57,7 +55,8 @@ class MainWindow(QMainWindow):
         self.land_widget = LandParcelWidget(self, self.db)
         self.stacked_layout.addWidget(self.estate_widget)
         self.stacked_layout.addWidget(self.land_widget)
-        
+
+        self.create_menu_bar()
         main_layout.addLayout(top_button_layout)
         main_layout.addLayout(self.stacked_layout)
         central_widget.setLayout(main_layout)
@@ -89,7 +88,7 @@ class MainWindow(QMainWindow):
         restore_action = QAction("Відновити резервну копію бази даних", self)
         restore_action.triggered.connect(self.restore_db_backup_action)
         place_value_action = QAction("Вставити значення нормативно грошової оцінки як за попередній рік", self)
-        # place_value_action.triggered.connect(self.)
+        place_value_action.triggered.connect(self.stacked_layout.widget(1).insert_nmv_from_last_year)
         change_value_action = QAction("Змінити всі значення нормативно грошової оцінки", self)
         change_value_action.triggered.connect(self.open_nmv_dialog)
         
@@ -176,6 +175,7 @@ class MainWindow(QMainWindow):
         estate_type_window.close_signal.connect(self.combo_check)
         estate_type_window.edited_signal.connect(self.update_all_estate_tax)
         estate_type_window.add_update_delete_signal.connect(self.stacked_layout.currentWidget().update_type_dropdown)
+        estate_type_window.update_table_signal.connect(self.load_data)
         estate_type_window.exec()
     
     def open_change_land_type_dialog(self):
@@ -183,20 +183,21 @@ class MainWindow(QMainWindow):
         land_type_window.close_signal.connect(self.combo_check)
         land_type_window.edited_signal.connect(self.update_all_land_tax)
         land_type_window.add_update_delete_signal.connect(self.stacked_layout.currentWidget().update_type_dropdown)
+        land_type_window.update_table_signal.connect(self.load_data)
         land_type_window.exec()
     
     def update_all_estate_tax(self):
         try:
             self.estate_repo.update_all_tax(self.get_current_year())
         except Exception as e:
-            QMessageBox.critical(self, "Помилка", f"Не вдалося розрахувати нові податки: {e}")
+            QMessageBox.warning(self, "Попередження!", f"Не вдалося розрахувати нові податки: {e}")
         self.load_data()
     
     def update_all_land_tax(self):
         try:
             self.land_repo.update_all_tax(self.get_current_year())
         except Exception as e:
-            QMessageBox.critical(self, "Помилка", f"Не вдалося розрахувати нові податки: {e}")
+            QMessageBox.warning(self, "Попередження!", f"Не вдалося розрахувати нові податки: {e}")
         self.load_data()
 
     def year_changed(self):
@@ -255,5 +256,6 @@ class MainWindow(QMainWindow):
             if self.db.load_DB_backup(file_path):
                 QMessageBox.information(self, "Успіх", "Базу даних успішно відновлено!")
                 self.stacked_layout.currentWidget().load_data()
+                self.combo_check()
             else:
                 QMessageBox.critical(self, "Помилка", "Не вдалося відновити базу даних.")
