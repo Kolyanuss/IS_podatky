@@ -48,6 +48,7 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(central_widget)
 
         main_layout = QVBoxLayout()
+        main_layout.setContentsMargins(3,3,3,3)
 
         top_button_layout = self.create_top_button_layout()
 
@@ -104,7 +105,8 @@ class MainWindow(QMainWindow):
     def create_top_button_layout(self):
         """Створення лейауту з кнопками"""
         button_layout = QHBoxLayout()
-
+        button_layout.setContentsMargins(10,10,10,0)
+        
         # year
         first_Vbox = QVBoxLayout()
         lable =  QLabel("Поточний рік:")

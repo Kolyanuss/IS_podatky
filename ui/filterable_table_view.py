@@ -5,9 +5,10 @@ from PyQt6.QtWidgets import (
     QLineEdit,
     QVBoxLayout,
     QHBoxLayout,
-    QWidget,
+    QWidget
 )
 from ui.styles import apply_styles
+from ui.utils import get_label
 
 class FilterableTableWidget(QWidget):
     class CustomSortFilterProxyModel(QSortFilterProxyModel):
@@ -164,6 +165,8 @@ class FilterableTableWidget(QWidget):
 
         # Основний макет
         main_layout = QVBoxLayout()
+        main_layout.setContentsMargins(0,0,0,0)
+        main_layout.addWidget(get_label("Пошук:"))
         main_layout.addLayout(filter_layout)
         main_layout.addWidget(self.table)
         self.setLayout(main_layout)

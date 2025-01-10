@@ -27,6 +27,15 @@ def create_CUD_buttons(add_func, update_func, delete_func):
     
     return button_layout
 
+def get_label(label_text):
+    label = QLabel(label_text)
+    label.setStyleSheet("""
+        color: #878787;
+        margin: 0px;
+        font-size: 14px;
+        """)
+    return label
+
 def confirm_delete(custom_text:str='Ви впевнені, що хочете видалити цей запис?'):
     reply = QMessageBox()
     reply.setIcon(QMessageBox.Icon.Question)

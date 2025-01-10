@@ -21,7 +21,7 @@ if __name__ == "__main__":
         os.makedirs(app_data_path)
 
     app = QApplication(sys.argv)
-    app.setWindowIcon(QIcon('Icon.ico'))
+    app.setWindowIcon(QIcon(resource_path('Icon.ico')))
     
     db = Database(app_data_path, sql_file)
     

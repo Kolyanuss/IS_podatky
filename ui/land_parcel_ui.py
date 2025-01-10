@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt
 
 from ui.styles import apply_style
-from ui.utils import create_CUD_buttons, create_Vbox, confirm_delete
+from ui.utils import create_CUD_buttons, create_Vbox, confirm_delete, get_label
 from ui.filterable_table_view import FilterableTableWidget
 
 from app.land_parcel_repository import LandParcelRepository, NormativeMonetaryValuesRepository
@@ -64,7 +64,10 @@ class LandParcelWidget(QWidget):
         input_container.setObjectName("inputContainer")
         apply_style(input_container, "input_container")
         
-        action_layout = QHBoxLayout(input_container)
+        vbox = QVBoxLayout(input_container)
+        vbox.addWidget(get_label("Редагування:"))
+        
+        action_layout = QHBoxLayout()
         
         # address area
         for field_name, label_text, placeholder in self.fields_config[:2]: 
@@ -144,6 +147,9 @@ class LandParcelWidget(QWidget):
         action_layout.addLayout(person_dropdown)
         action_layout.addLayout(type_dropdown)
         action_layout.addLayout(note_input)
+        action_layout.setContentsMargins(0,0,0,0)
+
+        vbox.addLayout(action_layout)
 
         return input_container
 
