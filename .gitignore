@@ -4,4 +4,4 @@ __pycache__
 *.xlsx
 build/
 dist/
-*.spec
+venv/
