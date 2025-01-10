@@ -1,3 +1,4 @@
 *.md
 *.db
 __pycache__
+*.xlsx

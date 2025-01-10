@@ -3,7 +3,7 @@ from PyQt6.QtWidgets import (
     QWidget, QMenuBar, QMenu, QLabel, QMessageBox, QStackedLayout, QApplication
 )
 from PyQt6.QtGui import QAction
-
+import pandas as pd
 from ui.add_person_ui import AddPersonDialog
 from ui.styles import apply_styles, get_button_style
 from ui.year_box import YearComboBox
@@ -20,6 +20,7 @@ from app.real_estate_repository import RealEstateRepository
 from app.land_parcel_repository import LandParcelRepository
 from app.real_estate_type_repository import RealEstateTypeBaseRepository
 from app.land_parcel_type_repository import LandParcelTypeBaseRepository
+from app.user_repository import UserRepository
 
 class MainWindow(QMainWindow):
     def __init__(self, db:Database):
@@ -83,8 +84,9 @@ class MainWindow(QMainWindow):
 
         # Actions Menu
         actions_menu = QMenu("Дії", self)
-        import_action = QAction("Імпорт в Excel", self)
-        export_action = QAction("Експорт з Excel", self)
+        # import_action = QAction("Імпорт з Excel", self)
+        export_action = QAction("Експорт в Excel", self)
+        export_action.triggered.connect(self.export_to_excel)
         restore_action = QAction("Відновити резервну копію бази даних", self)
         restore_action.triggered.connect(self.restore_db_backup_action)
         place_value_action = QAction("Вставити значення нормативно грошової оцінки як за попередній рік", self)
@@ -92,7 +94,7 @@ class MainWindow(QMainWindow):
         change_value_action = QAction("Змінити всі значення нормативно грошової оцінки", self)
         change_value_action.triggered.connect(self.open_nmv_dialog)
         
-        actions_menu.addAction(import_action)
+        # actions_menu.addAction(import_action)
         actions_menu.addAction(export_action)
         actions_menu.addAction(restore_action)
         actions_menu.addAction(place_value_action)
@@ -200,7 +202,7 @@ class MainWindow(QMainWindow):
             QMessageBox.information(self, "Успіх!", "Нові податки було успішно розраховано!")
         except Exception as e:
             QMessageBox.warning(self, "Попередження!", f"Не вдалося розрахувати нові податки: {e}")
-        self.load_data()
+        self.stacked_layout.widget(1).load_data()
 
     def year_changed(self):
         self.combo_check()
@@ -261,3 +263,28 @@ class MainWindow(QMainWindow):
                 self.combo_check()
             else:
                 QMessageBox.critical(self, "Помилка", "Не вдалося відновити базу даних.")
+
+    def export_to_excel(self):
+        year = self.get_current_year()
+        output_file = f"exported_data_{year}.xlsx"
+        with pd.ExcelWriter(output_file, engine="openpyxl") as writer:
+            user_repo = UserRepository(self.db)
+            records = user_repo.get_all_record()
+            df = pd.DataFrame(records, columns=["id","Прізвище","Ім'я","По батькові","Код платника податків","Адреса","Електронна пошта","Телефон"])
+            df = df.drop("id", axis=1)
+            df.to_excel(writer, sheet_name="Люди", index=False)
+            
+            records = self.estate_repo.get_all_record_by_year(year)
+            estate_col_names = self.stacked_layout.widget(0).table_column
+            df = pd.DataFrame(records, columns=estate_col_names)
+            df = df.drop([estate_col_names[0],estate_col_names[1]], axis=1)
+            df.to_excel(writer, sheet_name="Нерухомість", index=False)
+            
+            records = self.land_repo.get_all_record_by_year(year)
+            land_col_names = self.stacked_layout.widget(1).table_column
+            df = pd.DataFrame(records, columns=land_col_names)
+            df = df.drop([land_col_names[0],land_col_names[1]], axis=1)
+            df.to_excel(writer, sheet_name="Земельні ділянки", index=False)
+
+        QMessageBox.information(self, "Успіх!", f"Дані успішно експортовані до файлу: {output_file}")
+    

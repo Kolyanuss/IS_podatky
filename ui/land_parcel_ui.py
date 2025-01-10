@@ -347,8 +347,8 @@ class LandParcelWidget(QWidget):
     def update_all_normative_monetary_values(self, old_value, new_value):
         year = self.window().get_current_year()
         self.normative_monetary_value_repo.replace_values(year, old_value, new_value)
-        self.load_data()
-        self.window().edited_global_var_ivent() # update all taxes
+        self.window().update_all_land_tax() # load inside 
+        # self.load_data()
     
     def insert_nmv_from_last_year(self):
         try:
@@ -369,7 +369,7 @@ class LandParcelWidget(QWidget):
                 else:
                     skiped_value += 1
             QMessageBox.information(self, "Успіх!", f"Оновлення нормативно грошових оцінок завершено!\n Оновлено {completed_values} записів.\n Пропущено {skiped_value} заповнених значень.\n Пропущено {not_finded_value} не знайдених значень.")
-            self.load_data()
-            self.window().update_all_land_tax()
+            self.window().update_all_land_tax() # load inside 
+            # self.load_data()
         except Exception as e:
             QMessageBox.critical(self, "Помилка!", f"Помилка при копіюванні нормативно грошових оцінок! {e}")
