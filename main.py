@@ -3,7 +3,7 @@ from pathlib import Path
 from app.database import Database
 from ui.main_window_ui import MainWindow
 from PyQt6.QtWidgets import QApplication
-
+from PyQt6.QtGui import QIcon
 
 if __name__ == "__main__":
     sql_file = "db/db.sql"
@@ -13,7 +13,8 @@ if __name__ == "__main__":
         os.makedirs(app_data_path)
 
     app = QApplication(sys.argv)
-
+    app.setWindowIcon(QIcon('Icon.ico'))
+    
     db = Database(app_data_path, sql_file)
     
     window = MainWindow(db)
