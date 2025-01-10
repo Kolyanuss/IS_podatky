@@ -295,6 +295,10 @@ class LandParcelWidget(QWidget):
                 QMessageBox.warning(self, "Помилка", "Значення площі та нормативно грошової оцінки повинно бути числом!")
                 return
             year = self.window().get_current_year()
+            if not isinstance(data[-3], int):
+                QMessageBox.warning(self, "Помилка", "Виберіть людину зі списку!")
+                return
+            
             try:
                 self.land_repo.add_record(year, *data)
                 # QMessageBox.information(self, "Успіх", "Інформацію про нерухомість успішно додано!")
@@ -322,6 +326,10 @@ class LandParcelWidget(QWidget):
                 QMessageBox.warning(self, "Помилка", "Значення площі та нормативно грошової оцінки повинно бути числом!")
                 return
             year = self.window().get_current_year()
+            if not isinstance(data[-3], int):
+                QMessageBox.warning(self, "Помилка", "Виберіть людину зі списку!")
+                return
+            
             try:
                 self.land_repo.update_record(record_id, year, *data)
                 # QMessageBox.information(self, "Успіх", "Інформацію про нерухомість успішно оновлено!")

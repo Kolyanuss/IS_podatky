@@ -249,6 +249,10 @@ class RealEstateWidget(QWidget):
                 QMessageBox.warning(self, "Помилка", "Значення площі повинно бути числом!")
                 return
             year = self.window().get_current_year()
+            if not isinstance(data[-3], int):
+                QMessageBox.warning(self, "Помилка", "Виберіть людину зі списку!")
+                return
+                
             try:
                 self.estate_repo.add_record(year, *data)
                 # QMessageBox.information(self, "Успіх", "Інформацію про нерухомість успішно додано!")
@@ -275,6 +279,10 @@ class RealEstateWidget(QWidget):
                 QMessageBox.warning(self, "Помилка", "Значення площі повинно бути числом!")
                 return
             year = self.window().get_current_year()
+            if not isinstance(data[-3], int):
+                QMessageBox.warning(self, "Помилка", "Виберіть людину зі списку!")
+                return
+            
             try:
                 self.estate_repo.update_record(record_id, year, *data)
                 # QMessageBox.information(self, "Успіх", "Інформацію про нерухомість успішно оновлено!")
