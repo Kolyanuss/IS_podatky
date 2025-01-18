@@ -11,7 +11,7 @@ class UserRepository(BaseRepository):
         query = """
         SELECT
             users.id,
-            users.last_name || ' ' || users.name || ' ' || users.middle_name AS fullname
+            users.last_name || ' ' || users.name || ' ' || users.middle_name || ' ' || users.rnokpp AS fullname
         FROM users
         """
         return self.db.execute_query(query)

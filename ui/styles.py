@@ -13,7 +13,7 @@ def get_global_styles():
                 border-radius: 5px;
                 selection-background-color: #92c9ff;
                 selection-color: black;
-                font-size: 14px;
+                font-size: 12px;
             }
             QTableWidget::item {
                 padding: 5px;
@@ -23,7 +23,7 @@ def get_global_styles():
                 background-color: #f5f6fa;
                 padding: 5px;
                 font-weight: bold;
-                font-size: 13px;
+                font-size: 12px;
             }            
             QHeaderView::section:vertical {
                 border: none;
@@ -44,7 +44,7 @@ def get_global_styles():
                 border-radius: 5px;
                 selection-background-color: #92c9ff;
                 selection-color: black;
-                font-size: 14px;
+                font-size: 12px;
             }
             QTableView::item {
                 padding: 5px;
@@ -54,7 +54,7 @@ def get_global_styles():
                 background-color: #f5f6fa;
                 padding: 5px;
                 font-weight: bold;
-                font-size: 13px;
+                font-size: 12px;
             }            
             QHeaderView::section:vertical {
                 border: none;
