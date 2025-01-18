@@ -23,19 +23,20 @@ class LandParcelWidget(QWidget):
         self.user_repo = UserRepository(db)
         self.normative_monetary_value_repo = NormativeMonetaryValuesRepository(db)
         self.input_fields = {}
-        self.fields_config = [
+        self.fields_config = {
             # ("name", "Назва земельної ділянки", "Введіть назву*"),
-            ("address", "Урочище, Адреса\nземельної ділянки", "Введіть адресу*"),
-            ("area", "Площа (га)", "Введіть площу*"),
-            ("privileged", "Пільговик", ""),
-            ("normative_monetary_value", "Нормативно\nгрошова оцінка", "Введіть грошову оцінку*"),
-            ("tax", "Податок\n(грн)", ""),
-            ("paid", "Сплачено", ""),
-            ("owner", "Власник ділянки", "Виберіть власника*"),
-            ("type", "Тип ділянки", "Виберіть тип*"),
-            ("notes", "Нотатки", "Ваші нотатки"),
-        ]
-        self.table_column = ["id", "person_id"] + [row[1] for row in self.fields_config]
+            "address": ("Урочище, Адреса\nземельної ділянки", "Введіть адресу*"),
+            "area": ("Площа (га)", "Введіть площу*"),
+            "privileged": ("Пільговик", ""),
+            "normative_monetary_value": ("Нормативно\nгрошова оцінка", "Введіть грошову оцінку*"),
+            "tax": ("Податок\n(грн)", ""),
+            "paid": ("Сплачено", ""),
+            "sum_paid": ("Сплата\nподатку", "Сума сплаченого податку"),
+            "owner": ("Власник ділянки", "Виберіть власника*"),
+            "type": ("Тип ділянки", "Виберіть тип*"),
+            "notes": ("Нотатки", "Ваші нотатки"),
+        }
+        self.table_column = ["id", "person_id"] + [value[0] for value in self.fields_config.values()]
         
         
         self.init_ui()
@@ -45,9 +46,10 @@ class LandParcelWidget(QWidget):
     def init_ui(self):
         main_layout = QVBoxLayout()
         
-        self.table = FilterableTableWidget(self.table_column, [0,1], self.on_cell_click, [3,5,6])
+        self.table = FilterableTableWidget(self.table_column, [0,1], self.on_cell_click, [3,5,6,8])
         for i in [4,5,6,7,8]:
-            self.table.table.horizontalHeader().resizeSection(i,75)
+            self.table.table.horizontalHeader().resizeSection(i,50)
+        self.table.table.horizontalHeader().resizeSection(9,150)
             
         edit_layout = self.create_edit_layouts()
         action_button_layout = create_CUD_buttons(self.add_record, self.update_record, self.delete_record)
@@ -70,8 +72,8 @@ class LandParcelWidget(QWidget):
         action_layout = QHBoxLayout()
         
         # address area
-        for field_name, label_text, placeholder in self.fields_config[:2]: 
-            field_layout, input_field = create_Vbox(label_text, QLineEdit(), placeholder)
+        for field_name, text in list(self.fields_config.items())[:2]: 
+            field_layout, input_field = create_Vbox(text[0], QLineEdit(), text[1])
             self.input_fields[field_name] = input_field
             action_layout.addLayout(field_layout)
             
@@ -79,7 +81,7 @@ class LandParcelWidget(QWidget):
 
         # privileged radio button (група 1)
         privileged_layout = QVBoxLayout()
-        privileged_layout.addWidget(QLabel(self.fields_config[2][1]))
+        privileged_layout.addWidget(QLabel(self.fields_config["privileged"][0]))
         
         toggle_layout1 = QHBoxLayout()
         yes_button1 = QRadioButton("Так")
@@ -96,15 +98,15 @@ class LandParcelWidget(QWidget):
         self.privileged_group.addButton(no_button1)
         
         privileged_layout.addLayout(toggle_layout1)
-        self.input_fields[self.fields_config[2][0]] = toggle_layout1
+        self.input_fields["privileged"] = toggle_layout1
 
         # normative_monetary_value input
-        normative_monetary_value_input, input_field = create_Vbox(self.fields_config[3][1], QLineEdit(), self.fields_config[3][2])
-        self.input_fields[self.fields_config[3][0]] = input_field
+        normative_monetary_value_input, input_field = create_Vbox(self.fields_config["normative_monetary_value"][0], QLineEdit(), self.fields_config["normative_monetary_value"][1])
+        self.input_fields["normative_monetary_value"] = input_field
         
         # paid radio button (група 2)
         radio_box_layout = QVBoxLayout()
-        radio_box_layout.addWidget(QLabel(self.fields_config[5][1]))
+        radio_box_layout.addWidget(QLabel(self.fields_config["paid"][0]))
         
         toggle_layout2 = QHBoxLayout()
         yes_button2 = QRadioButton("Так")
@@ -121,29 +123,34 @@ class LandParcelWidget(QWidget):
         self.paid_group.addButton(no_button2)
         
         radio_box_layout.addLayout(toggle_layout2)
-        self.input_fields[self.fields_config[5][0]] = toggle_layout2
+        self.input_fields["paid"] = toggle_layout2
+        
+        # sum paid input
+        sum_paid_input, input_field = create_Vbox(self.fields_config["sum_paid"][0], QLineEdit(), self.fields_config["sum_paid"][1])
+        self.input_fields["sum_paid"] = input_field
         
         # person dropdown
-        person_dropdown, input_field = create_Vbox(self.fields_config[-3][1], self.create_person_dropdown())
-        self.input_fields[self.fields_config[-3][0]] = input_field
+        person_dropdown, input_field = create_Vbox(self.fields_config["owner"][0], self.create_person_dropdown())
+        self.input_fields["owner"] = input_field
 
         # type dropdown
         type_dropdown = QComboBox()
         type_list = self.land_type_repo.get_all_record()
         type_dropdown.addItems([row[1] for row in type_list])
-        type_dropdown.setPlaceholderText(self.fields_config[-2][2])
+        type_dropdown.setPlaceholderText(self.fields_config["type"][1])
         type_dropdown.setCurrentIndex(-1)
-        type_dropdown, input_field = create_Vbox(self.fields_config[-2][1], type_dropdown)
-        self.input_fields[self.fields_config[-2][0]] = input_field
+        type_dropdown, input_field = create_Vbox(self.fields_config["type"][0], type_dropdown)
+        self.input_fields["type"] = input_field
 
         # note input
-        note_input, input_field = create_Vbox(self.fields_config[-1][1], QLineEdit(), self.fields_config[-1][2])
-        self.input_fields[self.fields_config[-1][0]] = input_field
+        note_input, input_field = create_Vbox(self.fields_config["notes"][0], QLineEdit(), self.fields_config["notes"][1])
+        self.input_fields["notes"] = input_field
 
         # stack everything together
         action_layout.addLayout(privileged_layout)
         action_layout.addLayout(normative_monetary_value_input)
         action_layout.addLayout(radio_box_layout)
+        action_layout.addLayout(sum_paid_input)
         action_layout.addLayout(person_dropdown)
         action_layout.addLayout(type_dropdown)
         action_layout.addLayout(note_input)
@@ -157,7 +164,7 @@ class LandParcelWidget(QWidget):
     def create_person_dropdown(self):
         person_dropdown = QComboBox()
         person_dropdown.setEditable(True)
-        person_dropdown.setPlaceholderText(self.fields_config[-3][2])
+        person_dropdown.setPlaceholderText(self.fields_config["owner"][1])
         person_dropdown.setCurrentIndex(-1)
 
         self.person_data_list = self.user_repo.get_id_and_full_name()
@@ -269,19 +276,21 @@ class LandParcelWidget(QWidget):
             if isinstance(widget, QRadioButton) and widget.text() == row_data[7]:
                 widget.setChecked(True)
                 break
-
+        
+        self.input_fields["sum_paid"].setText(row_data[8])
+        
         # QComboBox ownner
-        index = self.input_fields["owner"].findText(row_data[8])
+        index = self.input_fields["owner"].findText(row_data[9])
         if index != -1:
             self.input_fields["owner"].setCurrentIndex(index)
 
         # QComboBox type
-        type_name = row_data[9].split(" (")[0]
+        type_name = row_data[10].split(" (")[0]
         index = self.input_fields["type"].findText(type_name)
         if index != -1:
             self.input_fields["type"].setCurrentIndex(index)
         
-        self.input_fields["notes"].setText(row_data[10])
+        self.input_fields["notes"].setText(row_data[11])
 
     def add_record(self):
         """Додавання запису"""
@@ -290,9 +299,18 @@ class LandParcelWidget(QWidget):
         if all(data[:-1]):
             try:
                 float(data[1])
+            except:
+                QMessageBox.warning(self, "Помилка", "Значення площі повинно бути числом!")
+                return
+            try:
                 float(data[3])
             except:
-                QMessageBox.warning(self, "Помилка", "Значення площі та нормативно грошової оцінки повинно бути числом!")
+                QMessageBox.warning(self, "Помилка", "Значення нормативно грошової оцінки повинно бути числом!")
+                return
+            try:
+                float(data[5])
+            except:
+                QMessageBox.warning(self, "Помилка", "Значення сплати податку повинно бути числом!")
                 return
             year = self.window().get_current_year()
             if not isinstance(data[-3], int):
@@ -321,9 +339,18 @@ class LandParcelWidget(QWidget):
         if all(data[:-1]):
             try:
                 float(data[1])
+            except:
+                QMessageBox.warning(self, "Помилка", "Значення площі повинно бути числом!")
+                return
+            try:
                 float(data[3])
             except:
-                QMessageBox.warning(self, "Помилка", "Значення площі та нормативно грошової оцінки повинно бути числом!")
+                QMessageBox.warning(self, "Помилка", "Значення нормативно грошової оцінки повинно бути числом!")
+                return
+            try:
+                float(data[5])
+            except:
+                QMessageBox.warning(self, "Помилка", "Значення сплати податку повинно бути числом!")
                 return
             year = self.window().get_current_year()
             if not isinstance(data[-3], int):

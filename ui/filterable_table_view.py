@@ -138,7 +138,7 @@ class FilterableTableWidget(QWidget):
         for i in hiden_columns_id:
             self.table.setColumnHidden(i, True)
         self.table.resizeColumnsToContents()
-        self.table.horizontalHeader().setMinimumSectionSize(60)
+        self.table.horizontalHeader().setMinimumSectionSize(50)
         self.table.setAlternatingRowColors(True)
         self.table.setEditTriggers(QTableView.EditTrigger.NoEditTriggers)
         self.table.setSelectionBehavior(QTableView.SelectionBehavior.SelectRows)

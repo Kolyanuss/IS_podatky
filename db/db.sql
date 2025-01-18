@@ -97,6 +97,7 @@ CREATE TABLE real_estate_taxes (
     tax_year INTEGER NOT NULL,
     tax REAL NOT NULL,
     paid INTEGER NOT NULL CHECK (paid IN (0, 1)),
+    sum_paid REAL NOT NULL DEFAULT 0,
     FOREIGN KEY (real_estate_id) REFERENCES real_estate(id)
         ON DELETE CASCADE
         ON UPDATE CASCADE,
@@ -108,6 +109,7 @@ CREATE TABLE land_parcel_taxes (
     tax_year INTEGER NOT NULL,
     tax REAL NOT NULL,
     paid INTEGER NOT NULL CHECK (paid IN (0, 1)),
+    sum_paid REAL NOT NULL DEFAULT 0,
     FOREIGN KEY (land_parcel_id) REFERENCES land_parcel(id)
         ON DELETE CASCADE
         ON UPDATE CASCADE,

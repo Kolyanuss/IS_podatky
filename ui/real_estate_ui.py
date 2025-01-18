@@ -22,18 +22,19 @@ class RealEstateWidget(QWidget):
         self.type_repo = RealEstateTypeRepository(db)
         self.user_repo = UserRepository(db)
         self.input_fields = {}
-        self.fields_config = [
-            ("name", "Назва нерухомості", "Введіть назву*"),
-            ("address", "Адреса нерухомості", "Введіть адресу*"),
-            ("area", "Площа\nм^2", "Введіть площу*"),
-            ("area_tax", "Площа\nподатку", "Площа податку"),
-            ("tax", "Податок\n(грн)", "Податок"),
-            ("paid", "Сплачено", "Сплачено"),
-            ("owner", "Власник нерухомості", "Виберіть власника*"),
-            ("type", "Тип\nнерухомості", "Виберіть тип нерухомості*"),
-            ("notes", "Нотатки", "Ваші нотатки"),
-        ]
-        self.table_column = ["id", "person_id"] + [row[1] for row in self.fields_config]
+        self.fields_config = {
+            "name": ("Назва нерухомості", "Введіть назву*"),
+            "address": ("Адреса нерухомості", "Введіть адресу*"),
+            "area": ("Площа\nм^2", "Введіть площу*"),
+            "area_tax": ("Площа\nподатку", "Площа податку"),
+            "tax": ("Податок\n(грн)", "Податок"),
+            "paid": ("Сплачено", "Сплачено"),
+            "sum_paid": ("Сплата\nподатку", "Сума сплаченого податку"),
+            "owner": ("Власник нерухомості", "Виберіть власника*"),
+            "type": ("Тип\nнерухомості", "Виберіть тип*"),
+            "notes": ("Нотатки", "Ваші нотатки"),
+        }
+        self.table_column = ["id", "person_id"] + [value[0] for value in self.fields_config.values()]
         
         
         self.init_ui()
@@ -43,9 +44,10 @@ class RealEstateWidget(QWidget):
     def init_ui(self):
         main_layout = QVBoxLayout()
         
-        self.table = FilterableTableWidget(self.table_column, [0,1], self.on_cell_click, [4,5,6])
-        for i in [4,5,6,7,9]:
-            self.table.table.horizontalHeader().resizeSection(i,75)
+        self.table = FilterableTableWidget(self.table_column, [0,1], self.on_cell_click, [4,5,6,8])
+        for i in [4,5,6,7,8]:
+            self.table.table.horizontalHeader().resizeSection(i,50)
+        self.table.table.horizontalHeader().resizeSection(9,150)
             
         edit_layout = self.create_edit_layouts()
         action_button_layout = create_CUD_buttons(self.add_record, self.update_record, self.delete_record)
@@ -68,8 +70,8 @@ class RealEstateWidget(QWidget):
         action_layout = QHBoxLayout()
         
         # name address area
-        for field_name, label_text, placeholder in self.fields_config[:3]: 
-            field_layout, input_field = create_Vbox(label_text, QLineEdit(), placeholder)
+        for field_name, text in list(self.fields_config.items())[:3]: 
+            field_layout, input_field = create_Vbox(text[0], QLineEdit(), text[1])
             self.input_fields[field_name] = input_field
             action_layout.addLayout(field_layout)
             
@@ -78,7 +80,7 @@ class RealEstateWidget(QWidget):
 
         # paid radio button
         radio_box_layout = QVBoxLayout()
-        radio_box_layout.addWidget(QLabel(self.fields_config[5][1]))
+        radio_box_layout.addWidget(QLabel(self.fields_config["paid"][0]))
         
         toggle_layout = QHBoxLayout()
         yes_button = QRadioButton("Так")
@@ -90,27 +92,32 @@ class RealEstateWidget(QWidget):
         no_button.setStyleSheet("font-size: 14px; padding: 10px 10px 10px 0px;")
         
         radio_box_layout.addLayout(toggle_layout)
-        self.input_fields[self.fields_config[5][0]] = toggle_layout
+        self.input_fields["paid"] = toggle_layout
+        
+        # sum paid input
+        sum_paid_input, input_field = create_Vbox(self.fields_config["sum_paid"][0], QLineEdit(), self.fields_config["sum_paid"][1])
+        self.input_fields["sum_paid"] = input_field
         
         # person dropdown
-        person_dropdown, input_field = create_Vbox(self.fields_config[-3][1], self.create_person_dropdown())
-        self.input_fields[self.fields_config[-3][0]] = input_field
+        person_dropdown, input_field = create_Vbox(self.fields_config["owner"][0], self.create_person_dropdown())
+        self.input_fields["owner"] = input_field
 
         # type dropdown
         type_dropdown = QComboBox()
         type_list = self.type_repo.get_all_record()
         type_dropdown.addItems([row[1] for row in type_list])
-        type_dropdown.setPlaceholderText("Тип нерухомості")
+        type_dropdown.setPlaceholderText(self.fields_config["type"][1])
         type_dropdown.setCurrentIndex(-1)
-        type_dropdown, input_field = create_Vbox(self.fields_config[-2][1], type_dropdown)
-        self.input_fields[self.fields_config[-2][0]] = input_field
+        type_dropdown, input_field = create_Vbox(self.fields_config["type"][0], type_dropdown)
+        self.input_fields["type"] = input_field
 
         # note input
-        note_input, input_field = create_Vbox(self.fields_config[-1][1], QLineEdit(), self.fields_config[-1][2])
-        self.input_fields[self.fields_config[-1][0]] = input_field
+        note_input, input_field = create_Vbox(self.fields_config["notes"][0], QLineEdit(), self.fields_config["notes"][1])
+        self.input_fields["notes"] = input_field
 
         # stack everything together
         action_layout.addLayout(radio_box_layout)
+        action_layout.addLayout(sum_paid_input)
         action_layout.addLayout(person_dropdown)
         action_layout.addLayout(type_dropdown)
         action_layout.addLayout(note_input)
@@ -123,7 +130,7 @@ class RealEstateWidget(QWidget):
     def create_person_dropdown(self):
         person_dropdown = QComboBox()
         person_dropdown.setEditable(True)
-        person_dropdown.setPlaceholderText(self.fields_config[-3][2])
+        person_dropdown.setPlaceholderText(self.fields_config["owner"][1])
         person_dropdown.setCurrentIndex(-1)
 
         self.person_data_list = self.user_repo.get_id_and_full_name()
@@ -224,19 +231,22 @@ class RealEstateWidget(QWidget):
             if isinstance(widget, QRadioButton) and widget.text() == row_data[7]:
                 widget.setChecked(True)
                 break
-
+        
+        # sum paid
+        self.input_fields["sum_paid"].setText(row_data[8])
+        
         # QComboBox ownner
-        index = self.input_fields["owner"].findText(row_data[8])
+        index = self.input_fields["owner"].findText(row_data[9])
         if index != -1:
             self.input_fields["owner"].setCurrentIndex(index)
 
         # QComboBox type
-        type_name = row_data[9].split(" (")[0]
+        type_name = row_data[10].split(" (")[0]
         index = self.input_fields["type"].findText(type_name)
         if index != -1:
             self.input_fields["type"].setCurrentIndex(index)
         
-        self.input_fields["notes"].setText(row_data[10])
+        self.input_fields["notes"].setText(row_data[11])
 
     def add_record(self):
         """Додавання запису"""
@@ -247,6 +257,11 @@ class RealEstateWidget(QWidget):
                 float(data[2])
             except:
                 QMessageBox.warning(self, "Помилка", "Значення площі повинно бути числом!")
+                return
+            try:
+                float(data[4])
+            except:
+                QMessageBox.warning(self, "Помилка", "Значення сплати податку повинно бути числом!")
                 return
             year = self.window().get_current_year()
             if not isinstance(data[-3], int):
@@ -277,6 +292,11 @@ class RealEstateWidget(QWidget):
                 float(data[2])
             except:
                 QMessageBox.warning(self, "Помилка", "Значення площі повинно бути числом!")
+                return
+            try:
+                float(data[4])
+            except:
+                QMessageBox.warning(self, "Помилка", "Значення сплати податку повинно бути числом!")
                 return
             year = self.window().get_current_year()
             if not isinstance(data[-3], int):

@@ -34,6 +34,7 @@ class RealEstateRepository(BaseRepository):
                 WHEN real_estate_taxes.paid = 0 THEN 'Ні'
                 ELSE ''
             END AS paid,
+            real_estate_taxes.sum_paid,
             users.last_name || ' ' || users.name || ' ' || users.middle_name || ' ' || users.rnokpp AS fullname,
             real_estate_type.name || ' (' || COALESCE(real_estate_type_rates.tax_rate,' _') || '%)' AS type_name,
             COALESCE(real_estate.notes,'')
@@ -104,7 +105,7 @@ class RealEstateRepository(BaseRepository):
         return tax
     
     def add_record(self, year, estate_name, address, 
-        area, paid, owner_id, estate_type_name, notes):
+        area, paid, sum_paid, owner_id, estate_type_name, notes):
         area = float(area)
         type_record = self.type_repo.get_by_name(estate_type_name)
         if type_record is None:
@@ -114,10 +115,10 @@ class RealEstateRepository(BaseRepository):
         
         tax = self.calculate_tax(year, area, type_id)
         paid = 1 if paid == "Так" or tax == 0 else 0
-        self.estate_tax_repo.add_record((new_estate_id, year, tax, paid))
+        self.estate_tax_repo.add_record((new_estate_id, year, tax, paid, sum_paid))
         
     def update_record(self, estate_id, year, estate_name, address, 
-        area, paid, owner_id, estate_type_name, notes):
+        area, paid, sum_paid, owner_id, estate_type_name, notes):
         area = float(area)
         type_record = self.type_repo.get_by_name(estate_type_name)
         if type_record is None:
@@ -128,9 +129,9 @@ class RealEstateRepository(BaseRepository):
         tax = self.calculate_tax(year, area, type_id)
         paid = 1 if paid == "Так" or tax == 0 else 0
         if self.estate_tax_repo.get_by_id_and_year(estate_id, year):
-            self.estate_tax_repo.update_record(estate_id, year, (tax, paid))
+            self.estate_tax_repo.update_record(estate_id, year, (tax, paid, sum_paid))
         else:
-            self.estate_tax_repo.add_record((estate_id, year, tax, paid))
+            self.estate_tax_repo.add_record((estate_id, year, tax, paid, sum_paid))
 
     def update_all_tax(self, year, type_id=None):
         if type_id is None:
@@ -164,8 +165,8 @@ class RealEstateRepository(BaseRepository):
         if self.estate_tax_repo.get_by_id_and_year(estate_id, year):
             self.estate_tax_repo.update_tax(estate_id, year, new_tax)
         else:
-            paid=0
-            self.estate_tax_repo.add_record((estate_id, year, new_tax, paid))
+            paid, sum_paid = 0, 0
+            self.estate_tax_repo.add_record((estate_id, year, new_tax, paid, sum_paid))
 
 class RealEstateTaxesRepository(BaseRepository):
     def __init__(self, database):

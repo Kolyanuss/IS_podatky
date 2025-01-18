@@ -25,7 +25,6 @@ from app.user_repository import UserRepository
 class MainWindow(QMainWindow):
     def __init__(self, db:Database):
         super().__init__()
-        self.input_fields = {}
         self.db = db
         self.salary_repo = SalaryRepository(db)
         self.estate_repo = RealEstateRepository(db)

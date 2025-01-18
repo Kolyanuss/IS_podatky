@@ -42,6 +42,7 @@ class LandParcelRepository(BaseRepository):
                 WHEN land_parcel_taxes.paid = 0 THEN 'Ні'
                 ELSE ''
             END AS paid,
+            land_parcel_taxes.sum_paid,
             users.last_name || ' ' || users.name || ' ' || users.middle_name || ' ' || users.rnokpp AS fullname,
             land_parcel_type.name || ' (' || COALESCE(land_parcel_type_rates.tax_rate,' _') || '%)' AS type_name,
             COALESCE(land_parcel.notes,'')
@@ -99,7 +100,7 @@ class LandParcelRepository(BaseRepository):
         return tax
     
     def add_record(self, year, address, area, privileged, 
-            normative_monetary_value, paid, owner_id, land_type_name, notes):
+            normative_monetary_value, paid, sum_paid, owner_id, land_type_name, notes):
         area = float(area)
         normative_monetary_value = float(normative_monetary_value)
         type_record = self.land_type_repo.get_by_name(land_type_name)
@@ -113,10 +114,10 @@ class LandParcelRepository(BaseRepository):
         
         tax = self.calculate_tax(year, area, type_id, normative_monetary_value) if privileged == 0 else 0
         paid = 1 if paid == "Так" or tax == 0 else 0
-        self.land_tax_repo.add_record((new_land_id, year, tax, paid))
+        self.land_tax_repo.add_record((new_land_id, year, tax, paid, sum_paid))
         
     def update_record(self, land_id, year, address, area, privileged, 
-            normative_monetary_value, paid, owner_id, land_type_name, notes):
+            normative_monetary_value, paid, sum_paid, owner_id, land_type_name, notes):
         area = float(area)
         normative_monetary_value = float(normative_monetary_value)
         type_record = self.land_type_repo.get_by_name(land_type_name)
@@ -136,9 +137,9 @@ class LandParcelRepository(BaseRepository):
         tax = self.calculate_tax(year, area, type_id, normative_monetary_value) if privileged == 0 else 0
         paid = 1 if paid == "Так" or tax == 0 else 0
         if self.land_tax_repo.get_by_id_and_year(land_id, year):
-            self.land_tax_repo.update_record(land_id, year, (tax, paid))
+            self.land_tax_repo.update_record(land_id, year, (tax, paid, sum_paid))
         else:
-            self.land_tax_repo.add_record((land_id, year, tax, paid))
+            self.land_tax_repo.add_record((land_id, year, tax, paid, sum_paid))
     
     def update_all_tax(self, year, type_id=None):
         if type_id is None:
@@ -177,8 +178,8 @@ class LandParcelRepository(BaseRepository):
         if self.land_tax_repo.get_by_id_and_year(land_id, year):
             self.land_tax_repo.update_tax(land_id, year, new_tax)
         else:
-            paid=0
-            self.land_tax_repo.add_record((land_id, year, new_tax, paid))
+            paid, sum_paid = 0, 0
+            self.land_tax_repo.add_record((land_id, year, new_tax, paid, sum_paid))
 
 
 class NormativeMonetaryValuesRepository(BaseRepository):
