@@ -16,7 +16,9 @@ class RealEstateTypeBaseRepository(BaseRepository):
         
     def get_type_rates(self, year:int):
         query = f"""
-        SELECT {self.table_name_rates}.id, {self.table_name_type}.name, {self.table_name_rates}.tax_rate, {self.table_name_rates}.tax_area_limit
+        SELECT {self.table_name_rates}.id, {self.table_name_type}.name,
+        COALESCE({self.table_name_rates}.tax_rate,''),
+        COALESCE({self.table_name_rates}.tax_area_limit,'')
         FROM {self.table_name_type}
         LEFT JOIN {self.table_name_rates}
         ON {self.table_name_type}.id = {self.table_name_rates}.real_estate_type_id

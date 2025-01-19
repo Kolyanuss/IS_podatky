@@ -34,7 +34,7 @@ class RealEstateRepository(BaseRepository):
                 WHEN real_estate_taxes.paid = 0 THEN 'Ні'
                 ELSE ''
             END AS paid,
-            real_estate_taxes.sum_paid,
+            COALESCE(real_estate_taxes.sum_paid,''),
             users.last_name || ' ' || users.name || ' ' || users.middle_name || ' ' || users.rnokpp AS fullname,
             real_estate_type.name || ' (' || COALESCE(real_estate_type_rates.tax_rate,' _') || '%)' AS type_name,
             COALESCE(real_estate.notes,'')

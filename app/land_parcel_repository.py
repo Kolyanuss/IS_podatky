@@ -42,7 +42,7 @@ class LandParcelRepository(BaseRepository):
                 WHEN land_parcel_taxes.paid = 0 THEN 'Ні'
                 ELSE ''
             END AS paid,
-            land_parcel_taxes.sum_paid,
+            COALESCE(land_parcel_taxes.sum_paid,''),
             users.last_name || ' ' || users.name || ' ' || users.middle_name || ' ' || users.rnokpp AS fullname,
             land_parcel_type.name || ' (' || COALESCE(land_parcel_type_rates.tax_rate,' _') || '%)' AS type_name,
             COALESCE(land_parcel.notes,'')
