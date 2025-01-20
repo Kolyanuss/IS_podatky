@@ -1,4 +1,4 @@
-from app.base_repository import BaseRepository
+from app.base_repository import BaseRepository, SilentCloseExeption
 from app.salary_repository import SalaryRepository
 import app.real_estate_type_repository as estate_type_base_repo
 
@@ -140,7 +140,7 @@ class RealEstateRepository(BaseRepository):
             estate_results = self.get_all_ids_by_type_id(type_id)
             
         if not estate_results:
-            raise Exception("Не знайдено записи для оновлення!")
+            raise SilentCloseExeption("Не знайдено записи для оновлення!")
         
         unique_exeptions = set()
         i=0

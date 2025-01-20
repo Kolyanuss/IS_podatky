@@ -16,7 +16,7 @@ from ui.nmv_dialog import InputNMVDialog
 
 from app.database import Database
 from app.salary_repository import SalaryRepository
-from app.real_estate_repository import RealEstateRepository
+from app.real_estate_repository import RealEstateRepository, SilentCloseExeption
 from app.land_parcel_repository import LandParcelRepository
 from app.real_estate_type_repository import RealEstateTypeBaseRepository
 from app.land_parcel_type_repository import LandParcelTypeBaseRepository
@@ -193,6 +193,8 @@ class MainWindow(QMainWindow):
         try:
             self.estate_repo.update_all_tax(self.get_current_year(), type_record_id)
             QMessageBox.information(self, "Успіх!", "Нові податки було успішно розраховано!")
+        except SilentCloseExeption:
+            pass
         except Exception as e:
             QMessageBox.warning(self, "Попередження!", f"Не вдалося розрахувати нові податки: {e}")
         self.load_data()
@@ -201,6 +203,8 @@ class MainWindow(QMainWindow):
         try:
             self.land_repo.update_all_tax(self.get_current_year(), type_record_id)
             QMessageBox.information(self, "Успіх!", "Нові податки було успішно розраховано!")
+        except SilentCloseExeption:
+            pass
         except Exception as e:
             QMessageBox.warning(self, "Попередження!", f"Не вдалося розрахувати нові податки: {e}")
         self.stacked_layout.widget(1).load_data()

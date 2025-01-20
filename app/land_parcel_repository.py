@@ -1,4 +1,4 @@
-from app.base_repository import BaseRepository
+from app.base_repository import BaseRepository, SilentCloseExeption
 import app.land_parcel_type_repository as land_type_base_repo
 
 class LandParcelRepository(BaseRepository):
@@ -148,7 +148,7 @@ class LandParcelRepository(BaseRepository):
             land_results = self.get_all_ids_by_type_id(type_id)
 
         if not land_results:
-            raise Exception("Не знайдено записи для оновлення!")
+            raise SilentCloseExeption("Не знайдено записи для оновлення!")
         
         unique_exeptions = set()
         i=0

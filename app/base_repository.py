@@ -1,5 +1,7 @@
 from app.database import Database
-import sqlite3
+
+class SilentCloseExeption(Exception):
+    pass
 
 class BaseRepository:
     def __init__(self, database: Database):

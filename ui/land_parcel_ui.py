@@ -31,7 +31,7 @@ class LandParcelWidget(QWidget):
             "normative_monetary_value": ("Нормативно\nгрошова оцінка", "Введіть грошову оцінку*"),
             "tax": ("Податок\n(грн)", ""),
             "paid": ("Сплачено", ""),
-            "sum_paid": ("Сплата\nподатку", "Сума сплаченого податку"),
+            "sum_paid": ("Сплата\nподатку", "Сплачена сума"),
             "owner": ("Власник ділянки", "Виберіть власника*"),
             "type": ("Тип ділянки", "Виберіть тип*"),
             "notes": ("Нотатки", "Ваші нотатки"),
@@ -203,7 +203,7 @@ class LandParcelWidget(QWidget):
         
         type_list = self.land_type_repo.get_all_record()
         type_dropdown.addItems([row[1] for row in type_list])
-        type_dropdown.setPlaceholderText(self.fields_config[-2][2])
+        type_dropdown.setPlaceholderText(self.fields_config["type"][1])
         type_dropdown.setCurrentIndex(-1)
     
     def load_data(self):
