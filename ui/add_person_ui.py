@@ -39,7 +39,8 @@ class AddPersonDialog(QWidget):
     def init_ui(self):
         """Ініціалізація основного інтерфейсу"""
         self.setWindowTitle("Список осіб")
-        self.setGeometry(100, 100, 1200, 700)
+        self.setGeometry(0, 0, 1200, 700)
+        self.showMaximized()
         
         apply_styles(self, ["base", "input_field", "label"])
         
@@ -104,11 +105,16 @@ class AddPersonDialog(QWidget):
                 QMessageBox.warning(self, "Помилка", "Код платника податків повинен бути числом!")
                 return
             try:
+                record = self.user_repository.get_record_by_code(data[3])
+                if record:
+                    QMessageBox.warning(self, "Попередження", f"Не вдалося додати запис: людина з таким кодом вже існує ({record[1]} {record[2]} {record[3]})")
+                    return
+                
                 self.user_repository.add_record(data)
                 self.edited_signal.emit()
                 # QMessageBox.information(self, "Успіх", "Користувача успішно додано!")
             except Exception as e:
-                QMessageBox.critical(self, "Помилка", f"Не вдалося додати користувача: {e}")
+                QMessageBox.critical(self, "Помилка", f"Не вдалося додати людину: {e}")
             self.clear_inputs()
             self.load_users()
         else:

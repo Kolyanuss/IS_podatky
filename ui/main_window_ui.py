@@ -38,7 +38,8 @@ class MainWindow(QMainWindow):
 
     def init_ui(self):
         self.setWindowTitle("База оподаткування")
-        self.setGeometry(100, 100, 1400, 700)
+        self.setGeometry(0, 0, 1400, 700)
+        self.showMaximized()
 
         apply_styles(self, ["base", "input_field", "label"])
 
