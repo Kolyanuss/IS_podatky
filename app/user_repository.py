@@ -15,4 +15,12 @@ class UserRepository(BaseRepository):
         FROM users
         """
         return self.db.execute_query(query)
+    
+    def get_record_by_code(self, code):
+        query = f"""
+        SELECT * FROM {self.table_name}
+        WHERE rnokpp = ?
+        """
+        result = self.db.execute_query(query, (code,))
+        return result[0] if result else None
         
