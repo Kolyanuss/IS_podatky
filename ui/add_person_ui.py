@@ -100,11 +100,6 @@ class AddPersonDialog(QWidget):
 
         if all(data[:-2]):
             try:
-                int(data[3])
-            except:
-                QMessageBox.warning(self, "Помилка", "Код платника податків повинен бути числом!")
-                return
-            try:
                 record = self.user_repository.get_record_by_code(data[3])
                 if record:
                     QMessageBox.warning(self, "Попередження", f"Не вдалося додати запис: людина з таким кодом вже існує ({record[1]} {record[2]} {record[3]})")
@@ -131,11 +126,6 @@ class AddPersonDialog(QWidget):
         data = [field.text() for field in self.input_fields.values()]
 
         if all(data[:-2]):
-            try:
-                int(data[3])
-            except:
-                QMessageBox.warning(self, "Помилка", "Код платника податків повинен бути числом!")
-                return
             try:
                 self.user_repository.update_record(record_id, data)
                 self.edited_signal.emit()
