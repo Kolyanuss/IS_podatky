@@ -43,7 +43,7 @@ CREATE TABLE users (
     last_name TEXT NOT NULL,
     name TEXT NOT NULL,
     middle_name TEXT NOT NULL,
-    rnokpp INTEGER NOT NULL UNIQUE,
+    rnokpp TEXT NOT NULL UNIQUE,
     address TEXT NOT NULL,
     email TEXT,
     phone TEXT
