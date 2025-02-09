@@ -2,6 +2,9 @@ import sqlite3
 import os, shutil
 from datetime import datetime
 
+class UniqueFieldException(Exception):
+    pass
+
 
 class Database:
     def __init__(self, app_data_path: str, sql_file: str):
@@ -75,6 +78,8 @@ class Database:
                 return cursor.lastrowid
         except sqlite3.Error as e:
             print(f"Помилка запиту зміни даних: {e}")
+            if "UNIQUE" in str(e):
+                raise UniqueFieldException()
             raise e
 
     def save_DB_backup(self):

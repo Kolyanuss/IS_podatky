@@ -7,7 +7,7 @@ from ui.styles import apply_style, apply_styles
 from ui.utils import confirm_delete, create_CUD_buttons
 from ui.filterable_table_view import FilterableTableWidget
 
-from app.database import Database
+from app.database import Database, UniqueFieldException
 from app.user_repository import UserRepository
 import app.real_estate_repository as estate_repo
 import app.land_parcel_repository as land_repo
@@ -127,14 +127,13 @@ class AddPersonDialog(QWidget):
 
         if all(data[:-2]):
             try:
-                record = self.user_repository.get_record_by_code(data[3])
-                if record:
-                    QMessageBox.warning(self, "Попередження", f"Не вдалося оновити запис: людина з таким кодом вже існує ({record[1]} {record[2]} {record[3]})")
-                    return
-                
                 self.user_repository.update_record(record_id, data)
                 self.edited_signal.emit()
                 # QMessageBox.information(self, "Успіх", "Дані користувача оновлено!")
+            except UniqueFieldException as e:
+                record = self.user_repository.get_record_by_code(data[3])
+                if record:
+                    QMessageBox.warning(self, "Попередження", f"Не вдалося оновити запис: людина з таким кодом вже існує ({record[1]} {record[2]} {record[3]})")
             except Exception as e:
                 QMessageBox.critical(self, "Помилка", f"Не вдалося оновити користувача: {e}")
             self.clear_inputs()
