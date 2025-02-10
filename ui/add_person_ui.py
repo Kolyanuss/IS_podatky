@@ -100,6 +100,7 @@ class AddPersonDialog(QWidget):
 
         if all(data[:-2]):
             try:
+                data[3] = str(data[3]).strip()
                 record = self.user_repository.get_record_by_code(data[3])
                 if record:
                     QMessageBox.warning(self, "Попередження", f"Не вдалося додати запис: людина з таким кодом вже існує ({record[1]} {record[2]} {record[3]})")
@@ -127,6 +128,7 @@ class AddPersonDialog(QWidget):
 
         if all(data[:-2]):
             try:
+                data[3] = str(data[3]).strip()
                 self.user_repository.update_record(record_id, data)
                 self.edited_signal.emit()
                 # QMessageBox.information(self, "Успіх", "Дані користувача оновлено!")
