@@ -285,7 +285,9 @@ class LandParcelWidget(QWidget):
             self.input_fields["owner"].setCurrentIndex(index)
 
         # QComboBox type
-        type_name = row_data[10].split(" (")[0]
+        type_name = row_data[10]
+        last_bracket_pos = type_name.rfind(" (")
+        type_name = type_name[:last_bracket_pos]
         index = self.input_fields["type"].findText(type_name)
         if index != -1:
             self.input_fields["type"].setCurrentIndex(index)
